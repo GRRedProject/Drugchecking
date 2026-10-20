@@ -1,0 +1,9 @@
+.sample-intro { padding-bottom: 20px; }
+.sample-intro h1 { max-width: 900px; overflow-wrap: anywhere; }
+.detail-panel { padding-top: 38px; }
+.data-header { align-items: center; margin-bottom: 24px; }
+.detail-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; overflow: hidden; border: 1px solid var(--line); background: var(--line); }
+.detail-item { min-width: 0; min-height: 118px; padding: 18px; background: var(--surface); }
+.detail-item span { display: block; margin-bottom: 12px; overflow: hidden; color: var(--muted); font: 500 10px 'DM Mono', monospace; letter-spacing: .06em; text-overflow: ellipsis; text-transform: uppercase; white-space: nowrap; }
+.detail-item strong { display: block; overflow-wrap: anywhere; font-size: 14px; line-height: 1.5; }
+@media (max-width: 720px) { .detail-grid { grid-template-columns: 1fr; }.detail-item { min-height: auto; } }

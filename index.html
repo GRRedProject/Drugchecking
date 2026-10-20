@@ -3,8 +3,8 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A local, privacy-conscious view of StreetCheck drug-checking results." />
-    <title>StreetCheck | Findings dashboard</title>
+    <meta name="description" content="Explore xylazine and medetomidine signals in StreetCheck drug-checking results over time." />
+    <title>StreetCheck | Trends</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -12,35 +12,32 @@
   </head>
   <body>
     <main>
-      <nav class="nav wrap"><a class="brand" href="#top"><span class="mark">S</span>StreetCheck</a><div class="nav-actions"><span class="local-status"><i></i> Published data snapshot</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button></div></nav>
+      <nav class="nav wrap"><a class="brand" href="index.html"><span class="mark">S</span>StreetCheck</a><div class="nav-actions"><a class="page-link active" href="index.html" aria-current="page">Trends</a><a class="page-link" href="samples.html">Explore samples</a><span class="local-status"><i></i> Published data snapshot</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button></div></nav>
       <section class="hero wrap" id="top">
         <p class="kicker">Drug-checking intelligence / local view</p>
-        <h1>See the signals<br />inside the <em>samples.</em></h1>
-        <p class="hero-copy">A live look at laboratory and test-strip findings across your StreetCheck records. Built to find patterns, not identify people.</p>
-        <div class="scope"><span>Record-level explorer</span><span>Contact fields excluded</span><span>Published data snapshot</span></div>
+        <h1>Track two<br /><em>changing signals.</em></h1>
+        <p class="hero-copy">Explore how often xylazine and medetomidine appear in FTIR results, and how their share of all samples in each period changes over time.</p>
+        <div class="scope"><span>FTIR detections</span><span>Monthly trends</span><span id="dateCoverage">Loading date coverage…</span></div>
       </section>
       <section class="wrap section" aria-labelledby="snapshot-title">
-        <div class="section-head"><div><p class="kicker">Snapshot</p><h2 id="snapshot-title">The dataset at a glance</h2></div><p id="refreshNote" class="muted">Loading local results…</p></div>
+        <div class="section-head"><div><p class="kicker">Latest snapshot</p><h2 id="snapshot-title">Signals in the dataset</h2></div><p id="refreshNote" class="muted">Loading published records…</p></div>
         <div class="metrics" id="metrics"></div>
       </section>
-      <section class="wrap section grid-two">
-        <article class="panel feature-panel"><p class="kicker">Signal / FTIR</p><h2>Fentanyl and xylazine appear together often.</h2><p class="feature-copy" id="coOccurrenceCopy">Loading result combinations…</p><div class="signal-bars" id="signalBars"></div><p class="fine-print">Counts reflect FTIR substance descriptions and may include multi-substance samples.</p></article>
-        <article class="panel"><div class="panel-head"><div><p class="kicker">Test-strip signal</p><h2>Overall FTS at 1 mL</h2></div><span class="badge" id="ftsTested">— tested</span></div><div class="stacked-bar" id="ftsBar" aria-label="FTS result distribution"></div><div class="legend" id="ftsLegend"></div></article>
+      <section class="wrap section" aria-labelledby="trend-title">
+        <div class="section-head"><div><p class="kicker">Over time</p><h2 id="trend-title">Monthly detections and share</h2></div><p class="muted">Share = samples mentioning the substance ÷ all samples acquired that month.</p></div>
+        <div class="trend-grid">
+          <article class="panel trend-panel"><div class="panel-head"><div><p class="kicker">Xylazine</p><h2>Detected in sample</h2></div><span class="badge" id="xylazineTotal">—</span></div><div class="chart-wrap"><svg id="xylazineChart" role="img" aria-label="Monthly xylazine detection trend"></svg></div><div class="chart-legend"><span><i class="legend-swatch xylazine-swatch"></i>Detections</span><span><i class="legend-line"></i>Share of monthly samples</span></div></article>
+          <article class="panel trend-panel"><div class="panel-head"><div><p class="kicker">Medetomidine</p><h2>Detected in sample</h2></div><span class="badge" id="medetomidineTotal">—</span></div><div class="chart-wrap"><svg id="medetomidineChart" role="img" aria-label="Monthly medetomidine detection trend"></svg></div><div class="chart-legend"><span><i class="legend-swatch medetomidine-swatch"></i>Detections</span><span><i class="legend-line"></i>Share of monthly samples</span></div></article>
+        </div>
+        <p class="fine-print trend-note">These are mentions in FTIR substance descriptions in the published records. A sample may list multiple substances. Month-to-month shares can vary when few samples were acquired.</p>
       </section>
       <section class="wrap section grid-two">
-        <article class="panel"><div class="panel-head"><div><p class="kicker">Most frequent</p><h2>FTIR substance results</h2></div><span class="badge">Top 8</span></div><ol class="rank-list" id="substanceList"></ol></article>
-        <article class="panel"><div class="panel-head"><div><p class="kicker">Physical form</p><h2>What was checked</h2></div><span class="badge">All records</span></div><div class="form-chart" id="formChart"></div></article>
-      </section>
-      <section class="wrap section explorer" aria-labelledby="explorer-title">
-        <div class="section-head"><div><p class="kicker">Record explorer</p><h2 id="explorer-title">Find a sample or pattern</h2></div><p class="muted">Personal/contact details and narrative notes are not included.</p></div>
-        <div class="filters"><label class="search"><span>Search</span><input id="searchInput" type="search" placeholder="Lab code, substance, town, form…" /></label><label><span>FTS result</span><select id="ftsFilter"><option value="">All results</option></select></label><label><span>Sample form</span><select id="formFilter"><option value="">All forms</option></select></label></div>
-        <p class="results-count" id="resultsCount"></p>
-        <div class="table-scroll"><table><thead><tr><th>Lab code</th><th>Acquired</th><th>Form</th><th>Suspected / sold as</th><th>FTIR substances</th><th>FTS @ 1 mL</th><th>Area</th></tr></thead><tbody id="recordRows"></tbody></table></div>
-        <div class="pager"><button type="button" id="previousPage">← Previous</button><span id="pageLabel"></span><button type="button" id="nextPage">Next →</button></div>
+        <article class="panel"><p class="kicker">Overlap</p><h2>When both signals appear</h2><p class="trend-copy" id="overlapCopy">Loading overlap…</p></article>
+        <article class="panel"><p class="kicker">Reading the data</p><h2>FTIR descriptions show detections</h2><p class="trend-copy">The trends count a substance when its name appears in the FTIR result. They describe this dataset, not the prevalence of a substance in the wider drug supply.</p><a class="text-link" href="samples.html">Open the sample explorer →</a></article>
       </section>
     </main>
-    <footer class="wrap"><span>STREETCHECK / LOCAL FINDINGS</span><span>For harm-reduction insight, not individual identification.</span></footer>
+    <footer class="wrap"><span>STREETCHECK / TRENDS</span><span>For harm-reduction insight, not individual identification.</span></footer>
     <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>The published data snapshot could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
-    <script src="app.js"></script>
+    <script src="trends.js"></script>
   </body>
 </html>

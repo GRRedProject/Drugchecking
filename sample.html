@@ -1,0 +1,27 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Inspect a single published StreetCheck sample record." />
+    <title>StreetCheck | Sample details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="sample.css" />
+  </head>
+  <body>
+    <main>
+      <nav class="nav wrap"><a class="brand" href="index.html"><span class="mark">S</span>StreetCheck</a><div class="nav-actions"><a class="page-link" href="index.html">Trends</a><a class="page-link active" href="samples.html">Explore samples</a><a class="page-link" href="samples.html">Back to sample list ←</a></div></nav>
+      <section class="hero wrap sample-intro"><p class="kicker">Sample record / published fields</p><h1 id="sampleTitle">Sample details</h1><p class="hero-copy" id="sampleSubtitle">Loading analytical fields…</p></section>
+      <section class="wrap section detail-panel" id="detailPanel" hidden>
+        <div class="section-head data-header"><div><p class="kicker">Record details</p><h2 id="sampleFileName">StreetCheck published snapshot</h2></div><span class="badge" id="sampleNumber"></span></div>
+        <div class="detail-grid" id="detailGrid"></div>
+      </section>
+      <section class="wrap section error" id="missingSample" hidden><p class="kicker">Record unavailable</p><h2>Sample not found</h2><p class="muted">Return to the sample explorer and choose a record.</p><a class="text-link" href="samples.html">Back to sample list →</a></section>
+    </main>
+    <footer class="wrap"><span>STREETCHECK / SAMPLE DETAIL</span><span>For harm-reduction insight, not individual identification.</span></footer>
+    <script src="sample.js"></script>
+  </body>
+</html>

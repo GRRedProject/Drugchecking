@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Search and open individual StreetCheck sample records." />
+    <title>StreetCheck | Sample explorer</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main>
+      <nav class="nav wrap"><a class="brand" href="index.html"><span class="mark">S</span>StreetCheck</a><div class="nav-actions"><a class="page-link" href="index.html">Trends</a><a class="page-link active" href="samples.html" aria-current="page">Explore samples</a><span class="local-status"><i></i> Published data snapshot</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button></div></nav>
+      <section class="hero wrap compact-hero">
+        <p class="kicker">Record-level explorer / local view</p>
+        <h1>Find a sample.<br /><em>Follow the details.</em></h1>
+        <p class="hero-copy">Search the published analytical records, then open any sample to inspect its available fields.</p>
+        <div class="scope"><span>Newest samples first</span><span>Search and filter</span><span>Contact details excluded</span></div>
+      </section>
+      <section class="wrap section explorer" aria-labelledby="explorer-title">
+        <div class="section-head"><div><p class="kicker">Sample explorer</p><h2 id="explorer-title">Browse individual records</h2></div><p id="refreshNote" class="muted">Loading published records…</p></div>
+        <div class="filters"><label class="search"><span>Search samples</span><input id="searchInput" type="search" placeholder="Lab code, substance, town, form…" /></label><label><span>FTS result</span><select id="ftsFilter"><option value="">All results</option></select></label><label><span>Sample form</span><select id="formFilter"><option value="">All forms</option></select></label></div>
+        <p class="results-count" id="resultsCount"></p>
+        <div class="table-scroll"><table><thead><tr><th>Lab code</th><th>Acquired</th><th>Form</th><th>Suspected / sold as</th><th>FTIR substances</th><th>FTS @ 1 mL</th><th>Area</th></tr></thead><tbody id="recordRows"></tbody></table></div>
+        <div class="pager"><button type="button" id="previousPage">← Previous</button><span id="pageLabel"></span><button type="button" id="nextPage">Next →</button></div>
+      </section>
+    </main>
+    <footer class="wrap"><span>STREETCHECK / SAMPLE EXPLORER</span><span>For harm-reduction insight, not individual identification.</span></footer>
+    <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>The published data snapshot could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
+    <script src="samples.js"></script>
+  </body>
+</html>
