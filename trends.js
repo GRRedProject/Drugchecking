@@ -1,5 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const colors = { xylazine: '#d8fa66', medetomidine: '#ff796a' };
+let allRecords = [];
 const themeToggle = $('#themeToggle');
 function applyTheme(theme) { document.documentElement.dataset.theme = theme; const dark = theme === 'dark'; themeToggle.querySelector('.theme-label').textContent = dark ? 'Light' : 'Dark'; themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`); themeToggle.title = themeToggle.getAttribute('aria-label'); }
 applyTheme(localStorage.getItem('streetcheck-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
@@ -7,6 +8,28 @@ themeToggle.addEventListener('click', () => { const next = document.documentElem
 const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
 function monthKey(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
 function monthLabel(key) { const [year, month] = key.split('-').map(Number); return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); }
+function dateInputValue(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
+function dateFromInput(value, endOfDay = false) { if (!value) return null; const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0); }
+function defaultDateRange() {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const firstOfTargetMonth = new Date(today.getFullYear(), today.getMonth() - 3, 1); const lastDay = new Date(firstOfTargetMonth.getFullYear(), firstOfTargetMonth.getMonth() + 1, 0).getDate();
+  const start = new Date(firstOfTargetMonth.getFullYear(), firstOfTargetMonth.getMonth(), Math.min(today.getDate(), lastDay));
+  $('#dateStart').value = dateInputValue(start); $('#dateEnd').value = dateInputValue(today);
+}
+function applyDateRange() {
+  const startValue = $('#dateStart').value; const endValue = $('#dateEnd').value; const start = dateFromInput(startValue); const end = dateFromInput(endValue, true); const error = $('#dateRangeError');
+  if (start && end && start > end) { error.textContent = 'The start date must be before the end date.'; error.hidden = false; return; }
+  error.hidden = true;
+  const selected = allRecords.filter((record) => {
+    if (!start && !end) return true;
+    const acquired = new Date(record.acquiredOn); if (Number.isNaN(acquired.getTime())) return false;
+    return (!start || acquired >= start) && (!end || acquired <= end);
+  });
+  render(selected);
+  const from = start ? start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'earliest record';
+  const through = end ? end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'latest record';
+  $('#dateRangeStatus').textContent = `Showing ${selected.length.toLocaleString()} samples · ${from} to ${through}`;
+}
 function renderChart(id, rows, substance, color) {
   const svg = $(id); const width = 720; const height = 270; const left = 42; const right = 42; const top = 18; const bottom = 42; const plotWidth = width - left - right; const plotHeight = height - top - bottom; const maxCount = Math.max(1, ...rows.map((row) => row[substance]));
   const points = rows.map((row, index) => ({ ...row, x: left + (rows.length <= 1 ? plotWidth / 2 : index * plotWidth / (rows.length - 1)), share: row.total ? row[substance] / row.total : 0 }));
@@ -38,5 +61,11 @@ function render(records) {
   renderChart('#xylazineChart', rows, 'xylazine', colors.xylazine); renderChart('#medetomidineChart', rows, 'medetomidine', colors.medetomidine);
   renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected');
 }
-async function init() { try { const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); render((await response.json()).records || []); } catch { document.querySelector('main').replaceWith($('#errorTemplate').content.cloneNode(true)); } }
+async function init() {
+  try {
+    const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); allRecords = (await response.json()).records || [];
+    $('#applyDateRange').addEventListener('click', applyDateRange); $('#resetDateRange').addEventListener('click', () => { defaultDateRange(); applyDateRange(); });
+    defaultDateRange(); applyDateRange();
+  } catch { document.querySelector('main').replaceWith($('#errorTemplate').content.cloneNode(true)); }
+}
 init();
