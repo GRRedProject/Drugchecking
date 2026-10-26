@@ -8,8 +8,10 @@ function showRecord(record, records) {
 }
 async function renderSample() {
   try {
-    const code = new URLSearchParams(window.location.search).get('code'); if (!code) throw new Error('Missing sample code');
-    const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); const records = (await response.json()).records || []; const record = records.find((item) => String(item.labCode ?? '') === code); if (!record) throw new Error('Sample not found'); showRecord(record, records);
+    const params = new URLSearchParams(window.location.search); const recordIndex = Number.parseInt(params.get('record'), 10); const code = params.get('code');
+    const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); const records = (await response.json()).records || [];
+    const record = Number.isInteger(recordIndex) && recordIndex >= 0 ? records[recordIndex] : records.find((item) => code && String(item.labCode ?? '') === code);
+    if (!record) throw new Error('Sample not found'); showRecord(record, records);
   } catch { $('#missingSample').hidden = false; }
 }
 renderSample();
