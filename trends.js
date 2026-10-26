@@ -18,11 +18,10 @@ function renderChart(id, rows, substance, color) {
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}${bars}<path d="${line}" class="trend-line"/><text x="${left}" y="12" class="axis-title">detections (bars) · share of monthly samples (line)</text>${labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
-  const groups = { fentanyl: { label: 'Fentanyl only', total: 0, detections: 0 }, heroin: { label: 'Heroin only', total: 0, detections: 0 }, both: { label: 'Fentanyl + heroin', total: 0, detections: 0 } };
+  const opioidPattern = /\b(fentanyl|heroin|hydrocodone|hydromorphone|oxycodone|oxymorphone|morphine|codeine|methadone|levomethadyl|buprenorphine|suboxone|nitazene|opioid|opiate|percocet|perc30|oc30|m30|vicodin|norco|tramadol|meperidine|tapentadol|oxy)\b/i;
+  const groups = { opioid: { label: 'Suspected opioid', total: 0, detections: 0 }, other: { label: 'No opioid listed', total: 0, detections: 0 } };
   records.forEach((record) => {
-    const expected = String(record.suspected || '').toLowerCase(); const hasFentanyl = /\bfentanyl\b/.test(expected); const hasHeroin = /\bheroin\b/.test(expected);
-    const group = hasFentanyl && hasHeroin ? groups.both : hasFentanyl ? groups.fentanyl : hasHeroin ? groups.heroin : null;
-    if (!group) return;
+    const group = opioidPattern.test(String(record.suspected || '')) ? groups.opioid : groups.other;
     group.total += 1; if (new RegExp(substance, 'i').test(record.ftirSubstances || '')) group.detections += 1;
   });
   $(containerId).innerHTML = Object.values(groups).map((group) => {
