@@ -9,9 +9,16 @@ function showRecord(record, records) {
 async function renderSample() {
   try {
     const params = new URLSearchParams(window.location.search); const recordIndex = Number.parseInt(params.get('record'), 10); const code = params.get('code');
-    const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); const records = (await response.json()).records || [];
+    const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), 15000);
+    let payload;
+    try { const response = await fetch('data/records.json', { cache: 'no-store', signal: controller.signal }); if (!response.ok) throw new Error('Data unavailable'); payload = await response.json(); }
+    finally { clearTimeout(timeout); }
+    const records = payload.records || [];
     const record = Number.isInteger(recordIndex) && recordIndex >= 0 ? records[recordIndex] : records.find((item) => code && String(item.labCode ?? '') === code);
     if (!record) throw new Error('Sample not found'); showRecord(record, records);
-  } catch { $('#missingSample').hidden = false; }
+  } catch (error) {
+    $('#sampleSubtitle').textContent = error.name === 'AbortError' ? 'Loading timed out. Refresh the page to try again.' : 'The record could not be loaded. Refresh the page or return to the sample list.';
+    $('#missingSample').hidden = false;
+  }
 }
 renderSample();
