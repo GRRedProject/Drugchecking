@@ -17,6 +17,19 @@ function renderChart(id, rows, substance, color) {
   const grid = [0, .5, 1].map((fraction) => { const y = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" class="chart-grid"/><text x="${left - 8}" y="${y + 4}" text-anchor="end">${Math.round(maxCount * fraction)}</text><text x="${width - right + 8}" y="${y + 4}">${Math.round(fraction * 100)}%</text>`; }).join('');
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}${bars}<path d="${line}" class="trend-line"/><text x="${left}" y="12" class="axis-title">detections (bars) · share of monthly samples (line)</text>${labels}`;
 }
+function renderExpectedComparison(records, substance, containerId) {
+  const groups = { fentanyl: { label: 'Fentanyl only', total: 0, detections: 0 }, heroin: { label: 'Heroin only', total: 0, detections: 0 }, both: { label: 'Fentanyl + heroin', total: 0, detections: 0 } };
+  records.forEach((record) => {
+    const expected = String(record.suspected || '').toLowerCase(); const hasFentanyl = /\bfentanyl\b/.test(expected); const hasHeroin = /\bheroin\b/.test(expected);
+    const group = hasFentanyl && hasHeroin ? groups.both : hasFentanyl ? groups.fentanyl : hasHeroin ? groups.heroin : null;
+    if (!group) return;
+    group.total += 1; if (new RegExp(substance, 'i').test(record.ftirSubstances || '')) group.detections += 1;
+  });
+  $(containerId).innerHTML = Object.values(groups).map((group) => {
+    const rate = group.total ? group.detections / group.total * 100 : 0; const percent = rate.toFixed(1);
+    return `<div class="expected-row"><div class="expected-row-head"><span>${group.label}</span><strong>${percent}%</strong></div><div class="expected-track" role="progressbar" aria-label="${escapeHTML(substance)} detections among ${escapeHTML(group.label.toLowerCase())} samples" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${rate.toFixed(2)}%"></span></div><p>${group.detections.toLocaleString()} of ${group.total.toLocaleString()} samples</p></div>`;
+  }).join('');
+}
 function render(records) {
   const dated = records.map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
   const months = new Map();
@@ -26,6 +39,7 @@ function render(records) {
   $('#refreshNote').textContent = `${records.length.toLocaleString()} published records loaded`; $('#dateCoverage').textContent = rows.length ? `${monthLabel(rows[0].key)} to ${monthLabel(rows.at(-1).key)}` : 'No dated records'; $('#xylazineTotal').textContent = `${xylazine.toLocaleString()} mentions`; $('#medetomidineTotal').textContent = `${medetomidine.toLocaleString()} mentions`;
   $('#overlapCopy').textContent = `${both.toLocaleString()} ${both === 1 ? 'sample mentions' : 'samples mention'} both xylazine and medetomidine in their FTIR substance result.`;
   renderChart('#xylazineChart', rows, 'xylazine', colors.xylazine); renderChart('#medetomidineChart', rows, 'medetomidine', colors.medetomidine);
+  renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected');
 }
 async function init() { try { const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); render((await response.json()).records || []); } catch { document.querySelector('main').replaceWith($('#errorTemplate').content.cloneNode(true)); } }
 init();
