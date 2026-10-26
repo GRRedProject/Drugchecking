@@ -12,31 +12,13 @@ After the GitHub Pages workflow completes, the dashboard is available at:
 
 ## Refresh the published snapshot
 
-1. Create a local `.pgpass` file in this folder (it is ignored by Git):
-
-   ```text
-   localhost:5432:*:postgres:YOUR_PASSWORD
-   ```
-
-2. Start the local server:
-
-   ```powershell
-   .\.venv\Scripts\python.exe server.py
-   ```
-
-3. In a second PowerShell window, retrieve the allowlisted record snapshot:
-
-   ```powershell
-   Invoke-WebRequest http://127.0.0.1:8000/api/records -OutFile data\records.json
-   ```
-
-4. Commit and push `data/records.json`. GitHub Actions deploys the static site automatically.
-
-If port 8000 is in use, run this before starting the server:
+When new results are in the local PostgreSQL database, open PowerShell in this folder and run:
 
 ```powershell
-$env:PORT = '8001'
+.\.venv\Scripts\python.exe publish_data.py
 ```
+
+The script exports only the approved analysis fields, updates `data/records.json`, and pushes that file to GitHub. GitHub Actions then updates the website. Database access must already be configured in the local `.pgpass` file; that file is ignored by Git and stays on this computer.
 
 ## Data privacy boundary
 
