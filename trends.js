@@ -19,15 +19,13 @@ function renderChart(id, rows, substance, color) {
 }
 function renderExpectedComparison(records, substance, containerId) {
   const opioidPattern = /\b(fentanyl|heroin|hydrocodone|hydromorphone|oxycodone|oxymorphone|morphine|codeine|methadone|levomethadyl|buprenorphine|suboxone|nitazene|opioid|opiate|percocet|perc30|oc30|m30|vicodin|norco|tramadol|meperidine|tapentadol|oxy)\b/i;
-  const groups = { opioid: { label: 'Suspected opioid', total: 0, detections: 0 }, other: { label: 'No opioid listed', total: 0, detections: 0 } };
+  const group = { label: 'Suspected opioid', total: 0, detections: 0 };
   records.forEach((record) => {
-    const group = opioidPattern.test(String(record.suspected || '')) ? groups.opioid : groups.other;
+    if (!opioidPattern.test(String(record.suspected || ''))) return;
     group.total += 1; if (new RegExp(substance, 'i').test(record.ftirSubstances || '')) group.detections += 1;
   });
-  $(containerId).innerHTML = Object.values(groups).map((group) => {
-    const rate = group.total ? group.detections / group.total * 100 : 0; const percent = rate.toFixed(1);
-    return `<div class="expected-row"><div class="expected-row-head"><span>${group.label}</span><strong>${percent}%</strong></div><div class="expected-track" role="progressbar" aria-label="${escapeHTML(substance)} detections among ${escapeHTML(group.label.toLowerCase())} samples" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${rate.toFixed(2)}%"></span></div><p>${group.detections.toLocaleString()} of ${group.total.toLocaleString()} samples</p></div>`;
-  }).join('');
+  const rate = group.total ? group.detections / group.total * 100 : 0; const percent = rate.toFixed(1);
+  $(containerId).innerHTML = `<div class="expected-row"><div class="expected-row-head"><span>${group.label}</span><strong>${percent}%</strong></div><div class="expected-track" role="progressbar" aria-label="${escapeHTML(substance)} detections among suspected opioid samples" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${rate.toFixed(2)}%"></span></div><p>${group.detections.toLocaleString()} of ${group.total.toLocaleString()} samples</p></div>`;
 }
 function render(records) {
   const dated = records.map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
