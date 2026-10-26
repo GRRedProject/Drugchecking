@@ -12,13 +12,15 @@ After the GitHub Pages workflow completes, the dashboard is available at:
 
 ## Refresh the published snapshot
 
-When new results are in the local PostgreSQL database, open PowerShell in this folder and run:
+When new results are in the local PostgreSQL database, double-click **Update Website Data.bat** in this folder. It refreshes the approved snapshot and pushes it to GitHub; GitHub Actions then updates the website. Leave the window open until it says the publish is done.
+
+You can also run it from PowerShell:
 
 ```powershell
 .\.venv\Scripts\python.exe publish_data.py
 ```
 
-The script exports only the approved analysis fields, updates `data/records.json`, and pushes that file to GitHub. GitHub Actions then updates the website. Database access must already be configured in the local `.pgpass` file; that file is ignored by Git and stays on this computer.
+The publisher exports only the approved analysis fields. Database access must already be configured in the local `.pgpass` file; that file is ignored by Git and stays on this computer.
 
 ## Data privacy boundary
 
