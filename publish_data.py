@@ -36,9 +36,20 @@ def main():
 
     print("Reading approved analysis fields from the local database...")
     records = fetch_safe_records()
+    seen = set()
+    unique_records = []
+    for record in records:
+        fingerprint = json.dumps(record, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+        if fingerprint in seen:
+            continue
+        seen.add(fingerprint)
+        unique_records.append(record)
+    duplicate_count = len(records) - len(unique_records)
+    if duplicate_count:
+        print(f"Skipping {duplicate_count} exact duplicate records.")
     SNAPSHOT.parent.mkdir(exist_ok=True)
     SNAPSHOT.write_text(
-        json.dumps({"records": records}, ensure_ascii=False, indent=2) + "\n",
+        json.dumps({"records": unique_records}, ensure_ascii=False, indent=2) + "\n",
         encoding="utf-8",
     )
 

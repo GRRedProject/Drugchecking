@@ -20,7 +20,7 @@ You can also run it from PowerShell:
 .\.venv\Scripts\python.exe publish_data.py
 ```
 
-The publisher exports only the approved analysis fields. Database access must already be configured in the local `.pgpass` file; that file is ignored by Git and stays on this computer.
+The publisher exports only the approved analysis fields and skips exact duplicate records. Rows that share a lab code but differ in dates or results are kept. Database access must already be configured in the local `.pgpass` file; that file is ignored by Git and stays on this computer.
 
 ## Data privacy boundary
 
