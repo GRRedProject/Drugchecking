@@ -24,6 +24,6 @@ The publisher exports only the approved analysis fields and skips exact duplicat
 
 ## Data privacy boundary
 
-The export API in `server.py` uses an explicit field allowlist. It does **not** send names, emails, phones, sample IDs, collector/group details, flags, or free-text narratives/notes to the browser. The published snapshot contains the approved analytical fields only; credentials are never stored in this repository.
+The export API in `server.py` uses an explicit field allowlist. It does **not** send names, emails, phones, sample IDs, collector/group details, flags, or general free-text narratives to the browser. It includes only the notes attached to specific test-strip results, alongside the approved analytical fields; credentials are never stored in this repository.
 
 This dashboard is for exploratory harm-reduction insight and is not a clinical, forensic, or individual-identification tool.
