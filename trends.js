@@ -1,6 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
 const colors = { xylazine: '#d8fa66', medetomidine: '#ff796a' };
 let allRecords = [];
+let selectedTown = 'both';
 const themeToggle = $('#themeToggle');
 function applyTheme(theme) { document.documentElement.dataset.theme = theme; const dark = theme === 'dark'; themeToggle.querySelector('.theme-label').textContent = dark ? 'Light' : 'Dark'; themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`); themeToggle.title = themeToggle.getAttribute('aria-label'); }
 applyTheme(localStorage.getItem('streetcheck-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
@@ -21,6 +22,9 @@ function applyDateRange() {
   if (start && end && start > end) { error.textContent = 'The start date must be before the end date.'; error.hidden = false; return; }
   error.hidden = true;
   const selected = allRecords.filter((record) => {
+    const town = String(record.town || '').trim().toLowerCase();
+    const matchesTown = selectedTown === 'both' ? town === 'muskegon' || town === 'grand rapids' : town === selectedTown;
+    if (!matchesTown) return false;
     if (!start && !end) return true;
     const acquired = new Date(record.acquiredOn); if (Number.isNaN(acquired.getTime())) return false;
     return (!start || acquired >= start) && (!end || acquired <= end);
@@ -28,7 +32,8 @@ function applyDateRange() {
   render(selected);
   const from = start ? start.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'earliest record';
   const through = end ? end.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'latest record';
-  $('#dateRangeStatus').textContent = `Showing ${selected.length.toLocaleString()} samples · ${from} to ${through}`;
+  const townLabel = selectedTown === 'both' ? 'Muskegon + Grand Rapids' : selectedTown === 'muskegon' ? 'Muskegon' : 'Grand Rapids';
+  $('#dateRangeStatus').textContent = `Showing ${selected.length.toLocaleString()} samples · ${townLabel} · ${from} to ${through}`;
 }
 function renderChart(id, rows, substance, color) {
   const svg = $(id); const width = 720; const height = 270; const left = 42; const right = 42; const top = 18; const bottom = 42; const plotWidth = width - left - right; const plotHeight = height - top - bottom; const maxCount = Math.max(1, ...rows.map((row) => row[substance]));
@@ -65,6 +70,11 @@ async function init() {
   try {
     const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); allRecords = (await response.json()).records || [];
     $('#applyDateRange').addEventListener('click', applyDateRange); $('#resetDateRange').addEventListener('click', () => { defaultDateRange(); applyDateRange(); });
+    document.querySelectorAll('[data-town]').forEach((button) => button.addEventListener('click', () => {
+      selectedTown = button.dataset.town;
+      document.querySelectorAll('[data-town]').forEach((option) => option.setAttribute('aria-pressed', String(option === button)));
+      applyDateRange();
+    }));
     defaultDateRange(); applyDateRange();
   } catch { document.querySelector('main').replaceWith($('#errorTemplate').content.cloneNode(true)); }
 }
