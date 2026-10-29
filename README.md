@@ -8,7 +8,7 @@ The trend charts count FTIR substance descriptions that mention each substance. 
 
 After the GitHub Pages workflow completes, the dashboard is available at:
 
-`https://hermandvbang.github.io/Drugchecking/`
+`https://grredproject.github.io/Drugchecking/`
 
 ## Refresh the published snapshot
 
