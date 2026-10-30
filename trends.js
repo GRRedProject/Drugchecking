@@ -60,6 +60,17 @@ function renderExpectedComparison(records, substance, containerId) {
   const rate = group.total ? group.detections / group.total * 100 : 0; const percent = rate.toFixed(1);
   $(containerId).innerHTML = `<div class="expected-row"><div class="expected-row-head"><span>${group.label}</span><strong>${percent}%</strong></div><div class="expected-track" role="progressbar" aria-label="${escapeHTML(substance)} detections among suspected opioid samples" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${rate.toFixed(2)}%"></span></div><p>${group.detections.toLocaleString()} of ${group.total.toLocaleString()} samples</p></div>`;
 }
+function renderLabSubstanceAverage(records) {
+  const counts = records.flatMap((record) => {
+    if (!/\b(?:heroin|fentanyl)\b/i.test(String(record.suspected || ''))) return [];
+    const raw = String(record.labTestingSubstances || record.labTestingResults || '').trim();
+    if (!raw) return [];
+    const substances = new Set(raw.split('|').map((name) => name.trim().replace(/\s+\((?:primary|trace|major)\)$/i, '').toLowerCase()).filter(Boolean));
+    return substances.size ? [substances.size] : [];
+  });
+  $('#labSubstanceAverage').textContent = counts.length ? (counts.reduce((sum, count) => sum + count, 0) / counts.length).toFixed(1) : '—';
+  $('#labSubstanceSampleCount').textContent = `${counts.length.toLocaleString()} samples with complementary lab results`;
+}
 function render(records) {
   const dated = records.map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
   const months = new Map();
@@ -69,6 +80,7 @@ function render(records) {
   $('#overlapCopy').textContent = `${both.toLocaleString()} ${both === 1 ? 'sample mentions' : 'samples mention'} both xylazine and medetomidine in their FTIR substance result.`;
   renderCombinedChart(rows);
   renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected');
+  renderLabSubstanceAverage(records);
 }
 async function init() {
   try {
