@@ -13,13 +13,6 @@
   <body>
     <main>
       <nav class="nav wrap"><a class="brand" href="index.html"><span class="mark">S</span>StreetCheck</a><div class="nav-actions"><a class="page-link active" href="index.html" aria-current="page">Trends</a><a class="page-link" href="samples.html">Explore samples</a><span class="local-status"><i></i> Published data snapshot</span><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button></div></nav>
-      <section class="wrap date-range-toolbar" aria-label="Choose a date range for the visualizations">
-        <div class="date-toolbar-heading"><p class="kicker">Visualization date range</p><p class="muted">Defaults to the past three months when you open this page.</p></div>
-        <div class="date-controls"><label>From<input id="dateStart" type="date" /></label><label>Through<input id="dateEnd" type="date" /></label><button class="range-button" id="applyDateRange" type="button">Apply range</button><button class="range-button secondary" id="resetDateRange" type="button">Past 3 months</button></div>
-        <div class="location-filter"><span class="location-filter-label">Location</span><div class="location-buttons" role="group" aria-label="Filter trends by location"><button class="location-button" type="button" data-town="muskegon" aria-pressed="false">Muskegon</button><button class="location-button" type="button" data-town="grand rapids" aria-pressed="false">Grand Rapids</button><button class="location-button" type="button" data-town="both" aria-pressed="true">Both</button></div></div>
-        <p id="dateRangeStatus" class="date-range-status" aria-live="polite">Loading date range…</p>
-        <p id="dateRangeError" class="date-range-error" role="alert" hidden></p>
-      </section>
       <section class="hero wrap" id="top">
         <p class="kicker">Drug-checking intelligence / local view</p>
         <h1>Track two<br /><em>changing signals.</em></h1>
@@ -32,6 +25,13 @@
       </section>
       <section class="wrap section" aria-labelledby="trend-title">
         <div class="section-head"><div><p class="kicker">Over time</p><h2 id="trend-title">Monthly share of samples</h2></div><p class="muted">Each point is the percentage of that month’s samples that mentioned the substance. This adjusts for months with different sample totals.</p></div>
+      <section class="date-range-toolbar" aria-label="Choose a date range for the trends">
+        <div class="date-toolbar-heading"><p class="kicker">Filter this chart</p><p class="muted">Defaults to the past three months when you open this page.</p></div>
+        <div class="date-controls"><label>From<input id="dateStart" type="date" /></label><label>Through<input id="dateEnd" type="date" /></label><button class="range-button" id="applyDateRange" type="button">Apply range</button><button class="range-button secondary" id="resetDateRange" type="button">Past 3 months</button></div>
+        <div class="location-filter"><span class="location-filter-label">Location</span><div class="location-buttons" role="group" aria-label="Filter trends by location"><button class="location-button" type="button" data-town="muskegon" aria-pressed="false">Muskegon</button><button class="location-button" type="button" data-town="grand rapids" aria-pressed="false">Grand Rapids</button><button class="location-button" type="button" data-town="both" aria-pressed="true">Both</button></div></div>
+        <p id="dateRangeStatus" class="date-range-status" aria-live="polite">Loading date range…</p>
+        <p id="dateRangeError" class="date-range-error" role="alert" hidden></p>
+      </section>
         <article class="panel trend-panel combined-trend-panel"><div class="panel-head"><div><p class="kicker">Monthly detection rate</p><h2>Xylazine and medetomidine</h2></div></div><div class="chart-wrap"><svg id="combinedTrendChart" role="img" aria-label="Monthly percentage of samples mentioning xylazine and medetomidine"></svg></div><div class="chart-legend"><span><i class="legend-line xylazine-line"></i>Xylazine</span><span><i class="legend-line medetomidine-line"></i>Medetomidine</span></div></article>
         <p class="fine-print trend-note">These are mentions in FTIR substance descriptions in the published records. A sample may list multiple substances. Month-to-month shares can vary when few samples were acquired.</p>
       </section>
