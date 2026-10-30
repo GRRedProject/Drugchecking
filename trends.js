@@ -35,15 +35,20 @@ function applyDateRange() {
   const townLabel = selectedTown === 'both' ? 'Muskegon + Grand Rapids' : selectedTown === 'muskegon' ? 'Muskegon' : 'Grand Rapids';
   $('#dateRangeStatus').textContent = `Showing ${selected.length.toLocaleString()} samples · ${townLabel} · ${from} to ${through}`;
 }
-function renderChart(id, rows, substance, color) {
-  const svg = $(id); const width = 720; const height = 270; const left = 48; const right = 24; const top = 24; const bottom = 42; const plotWidth = width - left - right; const plotHeight = height - top - bottom;
-  const points = rows.map((row, index) => ({ ...row, x: left + (rows.length <= 1 ? plotWidth / 2 : index * plotWidth / (rows.length - 1)), share: row.total ? row[substance] / row.total : 0 }));
-  const highestShare = Math.max(0, ...points.map((point) => point.share)); const maxShare = highestShare === 0 ? .05 : Math.min(1, Math.ceil(highestShare * 20) / 20);
-  const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${(top + plotHeight - point.share / maxShare * plotHeight).toFixed(1)}`).join(' ');
-  const markers = points.map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${(top + plotHeight - point.share / maxShare * plotHeight).toFixed(1)}" r="3.5" fill="${color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point.share * 100).toFixed(1)}% (${point[substance]} of ${point.total} samples)</title></circle>`).join('');
-  const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 5) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 12}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
-  const grid = [0, .5, 1].map((fraction) => { const y = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" class="chart-grid"/><text x="${left - 8}" y="${y + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}<path d="${line}" class="trend-line" stroke="${color}"/>${markers}<text x="${left}" y="12" class="axis-title">share of samples acquired that month</text>${labels}`;
+function renderCombinedChart(rows) {
+  const svg = $('#combinedTrendChart'); const width = 900; const height = 320; const left = 54; const right = 24; const top = 28; const bottom = 48; const plotWidth = width - left - right; const plotHeight = height - top - bottom;
+  const points = rows.map((row, index) => ({ ...row, x: left + (rows.length <= 1 ? plotWidth / 2 : index * plotWidth / (rows.length - 1)), xylazineShare: row.total ? row.xylazine / row.total : 0, medetomidineShare: row.total ? row.medetomidine / row.total : 0 }));
+  const highestShare = Math.max(0, ...points.flatMap((point) => [point.xylazineShare, point.medetomidineShare])); const maxShare = highestShare === 0 ? .05 : Math.min(1, Math.ceil(highestShare * 20) / 20);
+  const y = (share) => top + plotHeight - share / maxShare * plotHeight;
+  const series = [['xylazine', 'xylazineShare', colors.xylazine], ['medetomidine', 'medetomidineShare', colors.medetomidine]];
+  const lines = series.map(([name, field, color]) => {
+    const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${y(point[field]).toFixed(1)}`).join(' ');
+    const markers = points.map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${y(point[field]).toFixed(1)}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point[field] * 100).toFixed(1)}% (${point[name]} of ${point.total} samples)</title></circle>`).join('');
+    return `<path d="${line}" class="trend-line" stroke="${color}"/>${markers}`;
+  }).join('');
+  const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 14}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
+  const grid = [0, .5, 1].map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 10}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">percent of samples acquired that month</text>${lines}${labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
   const opioidPattern = /\b(fentanyl|heroin|hydrocodone|hydromorphone|oxycodone|oxymorphone|morphine|codeine|methadone|levomethadyl|buprenorphine|suboxone|nitazene|opioid|opiate|percocet|perc30|oc30|m30|vicodin|norco|tramadol|meperidine|tapentadol|oxy)\b/i;
@@ -61,9 +66,9 @@ function render(records) {
   dated.forEach((record) => { if (!months.has(record.month)) months.set(record.month, { key: record.month, total: 0, xylazine: 0, medetomidine: 0 }); const item = months.get(record.month); item.total += 1; if (/xylazine/i.test(record.ftirSubstances || '')) item.xylazine += 1; if (/medetomidine/i.test(record.ftirSubstances || '')) item.medetomidine += 1; });
   const rows = [...months.values()]; const xylazine = records.filter((record) => /xylazine/i.test(record.ftirSubstances || '')).length; const medetomidine = records.filter((record) => /medetomidine/i.test(record.ftirSubstances || '')).length; const both = records.filter((record) => /xylazine/i.test(record.ftirSubstances || '') && /medetomidine/i.test(record.ftirSubstances || '')).length;
   $('#metrics').innerHTML = [[records.length.toLocaleString(), 'Samples in dataset'], [xylazine.toLocaleString(), 'FTIR results mentioning xylazine'], [medetomidine.toLocaleString(), 'FTIR results mentioning medetomidine'], [`${rows.length ? monthLabel(rows[0].key) : '—'} – ${rows.length ? monthLabel(rows.at(-1).key) : '—'}`, 'Date range']].map(([value, label], index) => `<article class="metric ${index === 2 ? 'highlight' : ''}"><span class="value">${escapeHTML(value)}</span><span class="label">${label}</span></article>`).join('');
-  $('#refreshNote').textContent = `${records.length.toLocaleString()} published records loaded`; $('#dateCoverage').textContent = rows.length ? `${monthLabel(rows[0].key)} to ${monthLabel(rows.at(-1).key)}` : 'No dated records'; $('#xylazineTotal').textContent = `${xylazine.toLocaleString()} mentions`; $('#medetomidineTotal').textContent = `${medetomidine.toLocaleString()} mentions`;
+  $('#refreshNote').textContent = `${records.length.toLocaleString()} published records loaded`; $('#dateCoverage').textContent = rows.length ? `${monthLabel(rows[0].key)} to ${monthLabel(rows.at(-1).key)}` : 'No dated records';
   $('#overlapCopy').textContent = `${both.toLocaleString()} ${both === 1 ? 'sample mentions' : 'samples mention'} both xylazine and medetomidine in their FTIR substance result.`;
-  renderChart('#xylazineChart', rows, 'xylazine', colors.xylazine); renderChart('#medetomidineChart', rows, 'medetomidine', colors.medetomidine);
+  renderCombinedChart(rows);
   renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected');
 }
 async function init() {
