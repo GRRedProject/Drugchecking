@@ -54,3 +54,5 @@
 }
 @media(max-width:390px){.table-scroll tbody tr:not(.record-detail-row) td{grid-template-columns:76px minmax(0,1fr);gap:8px;padding:10px}.brand-logo{width:130px}}
 .lab-average-card{display:flex;align-items:center;gap:20px;max-width:720px;margin-top:25px;padding:22px 26px;border:1px solid var(--line);background:var(--surface)}.lab-average-card>strong{color:var(--pine);font:400 clamp(48px,8vw,76px)/1 'Dela Gothic One',Impact,sans-serif}.lab-average-card h3{margin:0 0 7px;font-size:16px}.lab-average-card p{margin:0;color:var(--muted);font:500 11px 'DM Mono',monospace}.lab-average-note{max-width:780px}@media(max-width:500px){.lab-average-card{gap:15px;padding:17px}.lab-average-card>strong{font-size:54px}}
+
+.reading-panel{max-width:780px}

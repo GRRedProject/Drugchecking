@@ -75,9 +75,8 @@ function render(records) {
   const dated = records.map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
   const months = new Map();
   dated.forEach((record) => { if (!months.has(record.month)) months.set(record.month, { key: record.month, total: 0, xylazine: 0, medetomidine: 0 }); const item = months.get(record.month); item.total += 1; if (/xylazine/i.test(record.ftirSubstances || '')) item.xylazine += 1; if (/medetomidine/i.test(record.ftirSubstances || '')) item.medetomidine += 1; });
-  const rows = [...months.values()]; const both = records.filter((record) => /xylazine/i.test(record.ftirSubstances || '') && /medetomidine/i.test(record.ftirSubstances || '')).length;
+  const rows = [...months.values()];
   $('#dateCoverage').textContent = rows.length ? `${monthLabel(rows[0].key)} to ${monthLabel(rows.at(-1).key)}` : 'No dated records';
-  $('#overlapCopy').textContent = `${both.toLocaleString()} ${both === 1 ? 'sample mentions' : 'samples mention'} both xylazine and medetomidine in their FTIR substance result.`;
   renderCombinedChart(rows);
   renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected');
   renderLabSubstanceAverage(records);
