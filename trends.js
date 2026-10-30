@@ -36,14 +36,14 @@ function applyDateRange() {
   $('#dateRangeStatus').textContent = `Showing ${selected.length.toLocaleString()} samples · ${townLabel} · ${from} to ${through}`;
 }
 function renderChart(id, rows, substance, color) {
-  const svg = $(id); const width = 720; const height = 270; const left = 42; const right = 42; const top = 18; const bottom = 42; const plotWidth = width - left - right; const plotHeight = height - top - bottom; const maxCount = Math.max(1, ...rows.map((row) => row[substance]));
+  const svg = $(id); const width = 720; const height = 270; const left = 48; const right = 24; const top = 24; const bottom = 42; const plotWidth = width - left - right; const plotHeight = height - top - bottom;
   const points = rows.map((row, index) => ({ ...row, x: left + (rows.length <= 1 ? plotWidth / 2 : index * plotWidth / (rows.length - 1)), share: row.total ? row[substance] / row.total : 0 }));
-  const barWidth = Math.max(2, Math.min(18, plotWidth / Math.max(rows.length, 1) * .62));
-  const bars = points.map((point) => { const barHeight = point[substance] / maxCount * plotHeight; return `<rect x="${(point.x - barWidth / 2).toFixed(1)}" y="${(top + plotHeight - barHeight).toFixed(1)}" width="${barWidth.toFixed(1)}" height="${barHeight.toFixed(1)}" rx="2" fill="${color}" opacity=".78"><title>${escapeHTML(monthLabel(point.key))}: ${point[substance]} detections / ${point.total} samples, ${(point.share * 100).toFixed(1)}%</title></rect>`; }).join('');
-  const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${(top + plotHeight - point.share * plotHeight).toFixed(1)}`).join(' ');
+  const highestShare = Math.max(0, ...points.map((point) => point.share)); const maxShare = highestShare === 0 ? .05 : Math.min(1, Math.ceil(highestShare * 20) / 20);
+  const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${(top + plotHeight - point.share / maxShare * plotHeight).toFixed(1)}`).join(' ');
+  const markers = points.map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${(top + plotHeight - point.share / maxShare * plotHeight).toFixed(1)}" r="3.5" fill="${color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point.share * 100).toFixed(1)}% (${point[substance]} of ${point.total} samples)</title></circle>`).join('');
   const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 5) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 12}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
-  const grid = [0, .5, 1].map((fraction) => { const y = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" class="chart-grid"/><text x="${left - 8}" y="${y + 4}" text-anchor="end">${Math.round(maxCount * fraction)}</text><text x="${width - right + 8}" y="${y + 4}">${Math.round(fraction * 100)}%</text>`; }).join('');
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}${bars}<path d="${line}" class="trend-line"/><text x="${left}" y="12" class="axis-title">detections (bars) · share of monthly samples (line)</text>${labels}`;
+  const grid = [0, .5, 1].map((fraction) => { const y = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${y}" x2="${width - right}" y2="${y}" class="chart-grid"/><text x="${left - 8}" y="${y + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}<path d="${line}" class="trend-line" stroke="${color}"/>${markers}<text x="${left}" y="12" class="axis-title">share of samples acquired that month</text>${labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
   const opioidPattern = /\b(fentanyl|heroin|hydrocodone|hydromorphone|oxycodone|oxymorphone|morphine|codeine|methadone|levomethadyl|buprenorphine|suboxone|nitazene|opioid|opiate|percocet|perc30|oc30|m30|vicodin|norco|tramadol|meperidine|tapentadol|oxy)\b/i;
