@@ -10,6 +10,7 @@ const optionalStripFields = new Set(['fts5Result', 'fts30Result', 'ftsNotes', 'x
 const stripResultFields = new Set(['ftsResult', 'fts5Result', 'fts30Result', 'xtsResult', 'xts5Result', 'xts30Result', 'btsResult', 'bts5Result', 'ntsResult', 'nts5Result', 'nts30Result', 'mtsResult', 'mts5Result', 'mts30Result']);
 Object.assign(fieldLabels, { labTestingResults: 'Lab testing results', labTestingSubstances: 'Lab results: substances', labTestingRatios: 'Lab results: component ratios', labQuantitativeSummary: 'Lab results: quantitative summary', labQTOFSummary: 'Lab results: QTOF summary', ftirResult: 'FTIR result', ftirComponents: 'FTIR component designations', ftirMixtureAnalysis: 'FTIR mixture analysis' });
 const optionalResultFields = new Set(['labTestingResults', 'labTestingSubstances', 'labTestingRatios', 'labQuantitativeSummary', 'labQTOFSummary', 'ftirResult', 'ftirSubstances', 'ftirComponents', 'ftirMixtureAnalysis']);
+const hiddenStripFields = new Set([...stripResultFields, ...optionalStripFields, 'ftsNotes', 'xtsNotes', 'btsNotes', 'ntsNotes', 'mtsNotes']);
 const themeToggle = $('#themeToggle');
 function applyTheme(theme) { document.documentElement.dataset.theme = theme; const dark = theme === 'dark'; themeToggle.querySelector('.theme-label').textContent = dark ? 'Light' : 'Dark'; themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`); themeToggle.title = themeToggle.getAttribute('aria-label'); }
 applyTheme(localStorage.getItem('streetcheck-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
@@ -19,24 +20,23 @@ function filteredRecords() {
   return records.filter((record) => { const searchable = Object.entries(record).filter(([key]) => key !== '_recordIndex').map(([, value]) => clean(value, '')).join(' ').toLowerCase(); return (!search || searchable.includes(search)); });
 }
 function renderDetailFields(record) {
-  const entries = Object.entries(record).filter(([key, value]) => key !== '_recordIndex' && key !== 'neighborhood' && key !== 'soldAs' && key !== 'phLevel' && !(stripResultFields.has(key) && !clean(value, '').toLowerCase().trim()) && !(stripResultFields.has(key) && clean(value, '').toLowerCase() === 'not tested') && (!optionalStripFields.has(key) || clean(value, '')) && (!optionalResultFields.has(key) || clean(value, '')));
+  const entries = Object.entries(record).filter(([key]) => key !== '_recordIndex' && key !== 'neighborhood' && key !== 'soldAs' && key !== 'phLevel' && !hiddenStripFields.has(key) && (!optionalResultFields.has(key) || clean(record[key], '')));
   const labKeys = new Set(['labTestingResults', 'labTestingSubstances', 'labTestingRatios', 'labQuantitativeSummary', 'labQTOFSummary']);
   const ftirKeys = new Set(['ftirResult', 'ftirSubstances', 'ftirComponents', 'ftirMixtureAnalysis']);
-  const stripKeys = new Set([...stripResultFields, 'ftsNotes', 'xtsNotes', 'btsNotes', 'ntsNotes', 'mtsNotes']);
   const card = ([key, value]) => { const label = fieldLabels[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, (character) => character.toUpperCase()); const displayValue = key === 'acquiredOn' ? dateOnly(value) : [...optionalResultFields, 'suspected'].includes(key) ? String(value ?? '').replace(/\|/g, '  /  ') : value; return `<article class="detail-item"><span>${escapeHTML(label)}</span><strong>${escapeHTML(displayValue)}</strong></article>`; };
   const groups = [
-    ['Sample details', entries.filter(([key]) => !stripKeys.has(key) && !ftirKeys.has(key) && !labKeys.has(key))],
-    ['Test strip results', entries.filter(([key]) => stripKeys.has(key))],
+    ['Sample details', entries.filter(([key]) => !ftirKeys.has(key) && !labKeys.has(key))],
     ['FTIR results', entries.filter(([key]) => ftirKeys.has(key))],
     ['Complementary lab results', entries.filter(([key]) => labKeys.has(key))]
   ];
   return groups.filter(([, fields]) => fields.length).map(([title, fields]) => `<section class="detail-section"><h3>${title}</h3><div class="detail-group">${fields.map(card).join('')}</div></section>`).join('');
 }
 function formatResult(value) { return String(value ?? '').trim().replace(/\|/g, '  /  ') || 'Not recorded'; }
+function formatTown(value) { const town = String(value ?? '').trim().replace(/\s+/g, ' '); if (!town) return 'Not recorded'; if (/^grand rapids$/i.test(town)) return 'Grand Rapids'; if (/^muskegon$/i.test(town)) return 'Muskegon'; return town; }
 function renderRecords() {
   const filtered = filteredRecords(); const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize)); page = Math.min(page, totalPages); const visible = filtered.slice((page - 1) * pageSize, page * pageSize);
   $('#resultsCount').textContent = `${filtered.length.toLocaleString()} matching records`;
-  $('#recordRows').innerHTML = visible.map((record) => { const area = clean(record.town); const index = record._recordIndex; const ftir = record.ftirResult || record.ftirSubstances; const lab = record.labTestingResults || record.labTestingSubstances; return `<tr><td class="code">${escapeHTML(record.labCode)}</td><td>${escapeHTML(dateOnly(record.acquiredOn))}</td><td class="result-cell" title="${escapeHTML(ftir)}">${escapeHTML(formatResult(ftir))}</td><td class="result-cell" title="${escapeHTML(lab)}">${escapeHTML(formatResult(lab))}</td><td>${escapeHTML(area)}</td><td><button class="detail-link" type="button" data-record-index="${index}" aria-expanded="false" aria-controls="sample-details-${index}">View sample ↓</button></td></tr><tr class="record-detail-row" id="sample-details-${index}" hidden><td class="record-detail-cell" colspan="6"><div class="sample-detail-grid">${renderDetailFields(record)}</div></td></tr>`; }).join('') || '<tr><td colspan="6">No records match those filters.</td></tr>';
+  $('#recordRows').innerHTML = visible.map((record) => { const area = formatTown(record.town); const index = record._recordIndex; const ftir = record.ftirResult || record.ftirSubstances; const lab = record.labTestingResults || record.labTestingSubstances; return `<tr><td class="code">${escapeHTML(record.labCode)}</td><td>${escapeHTML(dateOnly(record.acquiredOn))}</td><td class="result-cell" title="${escapeHTML(ftir)}">${escapeHTML(formatResult(ftir))}</td><td class="result-cell" title="${escapeHTML(lab)}">${escapeHTML(formatResult(lab))}</td><td class="town-cell" title="${escapeHTML(area)}">${escapeHTML(area)}</td><td><button class="detail-link" type="button" data-record-index="${index}" aria-expanded="false" aria-controls="sample-details-${index}">View sample ↓</button></td></tr><tr class="record-detail-row" id="sample-details-${index}" hidden><td class="record-detail-cell" colspan="6"><div class="sample-detail-grid">${renderDetailFields(record)}</div></td></tr>`; }).join('') || '<tr><td colspan="6">No records match those filters.</td></tr>';
   $('#pageLabel').textContent = `Page ${page} of ${totalPages}`; $('#previousPage').disabled = page === 1; $('#nextPage').disabled = page === totalPages;
 }
 async function init() {
