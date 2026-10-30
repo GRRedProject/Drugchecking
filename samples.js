@@ -8,9 +8,10 @@ const escapeHTML = (value) => clean(value).replace(/[&<>"']/g, (character) => ({
 const fieldLabels = { labCode: 'Lab code', acquiredOn: 'Acquired', town: 'Town', neighborhood: 'Neighborhood', sampleForm: 'Sample form', suspected: 'Suspected substance', soldAs: 'Sold as', ftirSubstances: 'FTIR substances', ftsResult: 'Fentanyl test strip @ 1 mL', fts5Result: 'Fentanyl test strip @ 5 mL', fts30Result: 'Fentanyl test strip @ 30 mL', ftsNotes: 'Fentanyl test strip notes', xtsResult: 'Xylazine test strip @ 1 mL', xts5Result: 'Xylazine test strip @ 5 mL', xts30Result: 'Xylazine test strip @ 30 mL', xtsNotes: 'Xylazine test strip notes', btsResult: 'Benzodiazepine test strip @ 2 mL', bts5Result: 'Benzodiazepine test strip @ 5 mL', btsNotes: 'Benzodiazepine test strip notes', ntsResult: 'Nitazene test strip @ 1 mL', nts5Result: 'Nitazene test strip @ 5 mL', nts30Result: 'Nitazene test strip @ 30 mL', ntsNotes: 'Nitazene test strip notes', mtsResult: 'Medetomidine test strip @ 1 mL', mts5Result: 'Medetomidine test strip @ 5 mL', mts30Result: 'Medetomidine test strip @ 30 mL', mtsNotes: 'Medetomidine test strip notes', phLevel: 'pH level' };
 const optionalStripFields = new Set(['fts5Result', 'fts30Result', 'ftsNotes', 'xts5Result', 'xts30Result', 'xtsNotes', 'bts5Result', 'btsNotes', 'nts5Result', 'nts30Result', 'ntsNotes', 'mts5Result', 'mts30Result', 'mtsNotes']);
 const stripResultFields = new Set(['ftsResult', 'fts5Result', 'fts30Result', 'xtsResult', 'xts5Result', 'xts30Result', 'btsResult', 'bts5Result', 'ntsResult', 'nts5Result', 'nts30Result', 'mtsResult', 'mts5Result', 'mts30Result']);
-Object.assign(fieldLabels, { labTestingResults: 'Lab testing results', labTestingSubstances: 'Lab results: substances', labTestingRatios: 'Lab results: component ratios', labQuantitativeSummary: 'Lab results: quantitative summary', labQTOFSummary: 'Lab results: QTOF summary', ftirResult: 'FTIR result', ftirComponents: 'FTIR component designations', ftirMixtureAnalysis: 'FTIR mixture analysis' });
-const optionalResultFields = new Set(['labTestingResults', 'labTestingSubstances', 'labTestingRatios', 'labQuantitativeSummary', 'labQTOFSummary', 'ftirResult', 'ftirSubstances', 'ftirComponents', 'ftirMixtureAnalysis']);
+Object.assign(fieldLabels, { labTestingResults: 'Lab testing results', ftirResult: 'FTIR result', ftirMixtureAnalysis: 'FTIR mixture analysis' });
+const optionalResultFields = new Set(['labTestingResults', 'ftirResult', 'ftirSubstances', 'ftirMixtureAnalysis']);
 const hiddenStripFields = new Set([...stripResultFields, ...optionalStripFields, 'ftsNotes', 'xtsNotes', 'btsNotes', 'ntsNotes', 'mtsNotes']);
+const hiddenDetailFields = new Set(['ftirComponents', 'labTestingSubstances', 'labTestingRatios', 'labQuantitativeSummary', 'labQTOFSummary']);
 const themeToggle = $('#themeToggle');
 function applyTheme(theme) { document.documentElement.dataset.theme = theme; const dark = theme === 'dark'; themeToggle.querySelector('.theme-label').textContent = dark ? 'Light' : 'Dark'; themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`); themeToggle.title = themeToggle.getAttribute('aria-label'); }
 applyTheme(localStorage.getItem('streetcheck-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
@@ -20,9 +21,9 @@ function filteredRecords() {
   return records.filter((record) => { const searchable = Object.entries(record).filter(([key]) => key !== '_recordIndex').map(([, value]) => clean(value, '')).join(' ').toLowerCase(); return (!search || searchable.includes(search)); });
 }
 function renderDetailFields(record) {
-  const entries = Object.entries(record).filter(([key]) => key !== '_recordIndex' && key !== 'neighborhood' && key !== 'soldAs' && key !== 'phLevel' && !hiddenStripFields.has(key) && (!optionalResultFields.has(key) || clean(record[key], '')));
-  const labKeys = new Set(['labTestingResults', 'labTestingSubstances', 'labTestingRatios', 'labQuantitativeSummary', 'labQTOFSummary']);
-  const ftirKeys = new Set(['ftirResult', 'ftirSubstances', 'ftirComponents', 'ftirMixtureAnalysis']);
+  const entries = Object.entries(record).filter(([key]) => key !== '_recordIndex' && key !== 'neighborhood' && key !== 'soldAs' && key !== 'phLevel' && !hiddenStripFields.has(key) && !hiddenDetailFields.has(key) && (!optionalResultFields.has(key) || clean(record[key], '')));
+  const labKeys = new Set(['labTestingResults']);
+  const ftirKeys = new Set(['ftirResult', 'ftirSubstances', 'ftirMixtureAnalysis']);
   const card = ([key, value]) => { const label = fieldLabels[key] || key.replace(/([A-Z])/g, ' $1').replace(/^./, (character) => character.toUpperCase()); const displayValue = key === 'acquiredOn' ? dateOnly(value) : [...optionalResultFields, 'suspected'].includes(key) ? String(value ?? '').replace(/\|/g, '  /  ') : value; return `<article class="detail-item"><span>${escapeHTML(label)}</span><strong>${escapeHTML(displayValue)}</strong></article>`; };
   const groups = [
     ['Sample details', entries.filter(([key]) => !ftirKeys.has(key) && !labKeys.has(key))],
