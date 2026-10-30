@@ -89,6 +89,12 @@ function renderContaminantOptions() {
 }
 function updateContaminantCount() { const count = selectedContaminants.size; $('#contaminantSelectionCount').textContent = count ? `${count} selected` : 'Select lab results'; }
 function selectedSuspectedLabel() { return $('#suspectedDrugFilter').selectedOptions[0]?.textContent || 'selected suspected drugs'; }
+function selectedSampleBasis() {
+  const value = $('#suspectedDrugFilter').value;
+  if (value === '__opioids__') return 'suspected opioid samples';
+  if (value === '__all__') return 'samples with a suspected drug';
+  return `${selectedSuspectedLabel()} samples`;
+}
 function filterSuspectedRecords(records) {
   const value = $('#suspectedDrugFilter').value;
   if (value === '__opioids__') return records.filter((record) => opioidPattern.test(String(record.suspected || '')));
@@ -131,13 +137,13 @@ function renderCombinedChart(rows, contaminants) {
   const y = (share) => top + plotHeight - share / maxShare * plotHeight;
   const lines = series.map((item, seriesIndex) => {
     const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${y(point.shares[seriesIndex]).toFixed(1)}`).join(' ');
-    const markers = points.map((point) => { const hits = point.detections[item.key] || 0; return `<circle cx="${point.x.toFixed(1)}" cy="${y(point.shares[seriesIndex]).toFixed(1)}" r="4" fill="${item.color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point.shares[seriesIndex] * 100).toFixed(1)}% (${hits} of ${point.total} samples)</title></circle>`; }).join('');
+    const markers = points.map((point) => { const hits = point.detections[item.key] || 0; return `<circle cx="${point.x.toFixed(1)}" cy="${y(point.shares[seriesIndex]).toFixed(1)}" r="4" fill="${item.color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point.shares[seriesIndex] * 100).toFixed(1)}% (${hits} of ${point.total} ${escapeHTML(selectedSampleBasis())})</title></circle>`; }).join('');
     return line ? `<path d="${line}" class="trend-line" stroke="${item.color}"/>${markers}` : '';
   }).join('');
   const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 14}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
   const grid = [0, .5, 1].map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 10}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
   const message = !series.length ? 'Select at least one lab result to display the chart.' : !rows.length ? 'No dated samples match these filters.' : '';
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of selected samples collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of ${escapeHTML(selectedSampleBasis())} collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
