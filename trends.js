@@ -1,7 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
 const colors = { xylazine: '#d8fa66', medetomidine: '#ff796a' };
 let allRecords = [];
-let selectedTown = 'both';
+let selectedTown = 'grand rapids';
 const themeToggle = $('#themeToggle');
 function applyTheme(theme) { document.documentElement.dataset.theme = theme; const dark = theme === 'dark'; themeToggle.querySelector('.theme-label').textContent = dark ? 'Light' : 'Dark'; themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`); themeToggle.title = themeToggle.getAttribute('aria-label'); }
 applyTheme(localStorage.getItem('streetcheck-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));

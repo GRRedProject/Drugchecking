@@ -24,7 +24,7 @@
       <section class="date-range-toolbar" aria-label="Choose a date range for the trends">
         <div class="date-toolbar-heading"><p class="kicker">Filter this chart</p><p class="muted">Defaults to the past three months when you open this page.</p></div>
         <div class="date-controls"><label>From<input id="dateStart" type="date" /></label><label>Through<input id="dateEnd" type="date" /></label><button class="range-button" id="applyDateRange" type="button">Apply range</button><button class="range-button secondary" id="resetDateRange" type="button">Past 3 months</button></div>
-        <div class="location-filter"><span class="location-filter-label">Location</span><div class="location-buttons" role="group" aria-label="Filter trends by location"><button class="location-button" type="button" data-town="muskegon" aria-pressed="false">Muskegon</button><button class="location-button" type="button" data-town="grand rapids" aria-pressed="false">Grand Rapids</button><button class="location-button" type="button" data-town="both" aria-pressed="true">Both</button></div></div>
+          <div class="location-filter"><span class="location-filter-label">Location</span><div class="location-buttons" role="group" aria-label="Filter trends by location"><button class="location-button" type="button" data-town="muskegon" aria-pressed="false">Muskegon</button><button class="location-button" type="button" data-town="grand rapids" aria-pressed="true">Grand Rapids</button><button class="location-button" type="button" data-town="both" aria-pressed="false">Both</button></div></div>
         <p id="dateRangeStatus" class="date-range-status" aria-live="polite">Loading date range…</p>
         <p id="dateRangeError" class="date-range-error" role="alert" hidden></p>
       </section>
@@ -46,6 +46,6 @@
     </main>
     <footer class="wrap"><span>STREETCHECK / TRENDS</span><span>For harm-reduction insight, not individual identification.</span></footer>
     <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>The published data snapshot could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
-    <script src="trends.js?v=remove-snapshot-1"></script>
+    <script src="trends.js?v=grand-rapids-default-1"></script>
   </body>
 </html>
