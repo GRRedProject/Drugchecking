@@ -13,7 +13,33 @@ const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (character
 function monthKey(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
 function monthLabel(key) { const [year, month] = key.split('-').map(Number); return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); }
 function splitNames(value) { return String(value || '').split('|').map((name) => name.trim()).filter(Boolean); }
-function labSubstances(record) { return splitNames(record.labTestingSubstances || record.labTestingResults).map((name) => name.replace(/\s+\((?:primary|trace|major)\)$/i, '').trim()).filter(Boolean); }
+const labAliases = new Map([
+  ['3,4-mdma', 'MDMA'], ['acetyl fentanyl', 'Acetylfentanyl'], ['aspirin', 'Acetylsalicylic Acid (Aspirin)'],
+  ['acetylsalicylic acid', 'Acetylsalicylic Acid (Aspirin)'], ['benadryl', 'Diphenhydramine'],
+  ['dimethyl sulfone (methylsulfonemethane, msm)', 'Dimethyl Sulfone (MSM)'],
+  ['dimethyl sulfone (methylsulfonylmethane msm)', 'Dimethyl Sulfone (MSM)'],
+  ['methylsulfonylmethane (msm or dimethyl sulfone)', 'Dimethyl Sulfone (MSM)'],
+  ['methyl ecgonidine (med)', 'Methylecgonidine'], ['niacinamide', 'Nicotinamide'],
+  ['n,n-dimethyltryptamine (dmt)', 'DMT'], ['6-monoacetylmorphine', '6-Monoacetylmorphine (6-MAM)'],
+  ['6-mono acetyl morphine', '6-Monoacetylmorphine (6-MAM)'], ['3-monoacetylmorphine (3-mam)', '3-Monoacetylmorphine (3-MAM)'],
+  ['n-pyrrolidino protonitazene', 'N-Pyrrolidino-Protonitazene'], ['p-fluorofentanyl', 'Para-fluorofentanyl'],
+  ['para-fluorofentanyl', 'Para-fluorofentanyl'], ['despropionyl-para-fluorofentanyl', 'Despropionyl P-Fluorofentanyl'],
+  ['1-(2-chlorophenyl)(methylimino)methylcyclopentanol.', '1-(2-chlorophenyl)(methylimino)methylcyclopentanol'],
+  ['1-phenethyl-4-propionyloxypiperidine.', '1-Phenethyl-4-Propionyloxypiperidine'],
+  ['n-phenethyl-n-phenylprionamide', 'N-Phenethyl-N-Phenylpropionamide'],
+  ['n-phenethyl-n-phenylpropionamide', 'N-Phenethyl-N-Phenylpropionamide'],
+  ['bs(2,2,6,6-tetramethyl-4-piperidyl) sebacate', 'Bis(2,2,6,6-Tetramethyl-4-Piperidyl) Sebacate'],
+  ['hydrocodone', 'Hydrocodone'], ['diphenhydramine (benadryl)', 'Diphenhydramine'],
+  ['paracetamol (acetaminophen)', 'Acetaminophen'], ['ibuprofen (advil, motrin)', 'Ibuprofen']
+]);
+const nonDrugLabOptions = new Set(['no compounds of interest detected', 'pending identification', 'pending nitazene', 'sample damaged in transit']);
+const labKey = (name) => name.toLocaleLowerCase().replace(/[.]+$/g, '').replace(/\s+/g, ' ').trim();
+function canonicalLabName(name) {
+  const cleaned = name.replace(/\s+\((?:primary|trace|major)\)$/i, '').trim();
+  const key = labKey(cleaned);
+  return nonDrugLabOptions.has(key) ? '' : (labAliases.get(key) || cleaned.replace(/[.]+$/g, '').trim());
+}
+function labSubstances(record) { return splitNames(record.labTestingSubstances || record.labTestingResults).map(canonicalLabName).filter(Boolean); }
 function uniqueNames(records, field) {
   const names = new Map();
   records.forEach((record) => splitNames(record[field]).forEach((name) => { const key = name.toLocaleLowerCase(); if (!names.has(key)) names.set(key, name); }));
@@ -21,7 +47,7 @@ function uniqueNames(records, field) {
 }
 function uniqueLabNames(records) {
   const names = new Map();
-  records.forEach((record) => labSubstances(record).forEach((name) => { const key = name.toLocaleLowerCase(); if (!names.has(key)) names.set(key, name); }));
+  records.forEach((record) => labSubstances(record).forEach((name) => { const key = labKey(name); if (!names.has(key)) names.set(key, name); }));
   return [...names.values()].sort((a, b) => a.localeCompare(b));
 }
 function populateTrendFilters(records) {
