@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Dela+Gothic+One&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=red-project-hours-1" />
+    <link rel="stylesheet" href="styles.css?v=trends-range-presets-1" />
   </head>
   <body>
     <main>
@@ -27,8 +27,8 @@
       <section class="wrap section" aria-labelledby="trend-title">
         <div class="section-head"><div><p class="kicker">Over time</p><h2 id="trend-title">Monthly share of samples</h2></div><p class="muted">Each point is the percentage of that month’s samples that mentioned the substance. This adjusts for months with different sample totals.</p></div>
       <section class="date-range-toolbar" aria-label="Choose a date range for the trends">
-        <div class="date-toolbar-heading"><p class="kicker">Filter this chart</p><p class="muted">Defaults to the past three months when you open this page.</p></div>
-        <div class="date-controls"><label>From<input id="dateStart" type="date" /></label><label>Through<input id="dateEnd" type="date" /></label><button class="range-button" id="applyDateRange" type="button">Apply range</button><button class="range-button secondary" id="resetDateRange" type="button">Past 3 months</button></div>
+        <div class="date-toolbar-heading"><p class="kicker">Filter this chart</p><p class="muted">Defaults to the past six months. Choose a quick range or set dates.</p></div>
+        <div class="date-controls"><label>From<input id="dateStart" type="date" /></label><label>Through<input id="dateEnd" type="date" /></label><button class="range-button" id="applyDateRange" type="button">Apply dates</button><div class="range-presets" role="group" aria-label="Quick date ranges"><button class="range-button secondary" id="rangeSixMonths" type="button" aria-pressed="true">6 months</button><button class="range-button secondary" id="rangeThreeMonths" type="button" aria-pressed="false">3 months</button></div></div>
           <div class="location-filter"><span class="location-filter-label">Location</span><div class="location-buttons" role="group" aria-label="Filter trends by location"><button class="location-button" type="button" data-town="muskegon" aria-pressed="false">Muskegon</button><button class="location-button" type="button" data-town="grand rapids" aria-pressed="true">Grand Rapids</button><button class="location-button" type="button" data-town="both" aria-pressed="false">Both</button></div></div>
         <p id="dateRangeStatus" class="date-range-status" aria-live="polite">Loading date range…</p>
         <p id="dateRangeError" class="date-range-error" role="alert" hidden></p>
@@ -51,6 +51,6 @@
     </main>
     <footer class="wrap"><span>STREETCHECK / TRENDS</span><span>For harm-reduction insight, not individual identification.</span></footer>
     <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>The published data snapshot could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
-    <script src="trends.js?v=grand-rapids-default-1"></script>
+    <script src="trends.js?v=trends-range-presets-1"></script>
   </body>
 </html>

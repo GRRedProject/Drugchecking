@@ -11,9 +11,9 @@ function monthKey(value) { const date = new Date(value); return Number.isNaN(dat
 function monthLabel(key) { const [year, month] = key.split('-').map(Number); return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); }
 function dateInputValue(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 function dateFromInput(value, endOfDay = false) { if (!value) return null; const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0); }
-function defaultDateRange() {
+function defaultDateRange(months = 6) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const firstOfTargetMonth = new Date(today.getFullYear(), today.getMonth() - 3, 1); const lastDay = new Date(firstOfTargetMonth.getFullYear(), firstOfTargetMonth.getMonth() + 1, 0).getDate();
+  const firstOfTargetMonth = new Date(today.getFullYear(), today.getMonth() - months, 1); const lastDay = new Date(firstOfTargetMonth.getFullYear(), firstOfTargetMonth.getMonth() + 1, 0).getDate();
   const start = new Date(firstOfTargetMonth.getFullYear(), firstOfTargetMonth.getMonth(), Math.min(today.getDate(), lastDay));
   $('#dateStart').value = dateInputValue(start); $('#dateEnd').value = dateInputValue(today);
 }
@@ -73,13 +73,15 @@ function render(records) {
 async function init() {
   try {
     const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); allRecords = (await response.json()).records || [];
-    $('#applyDateRange').addEventListener('click', applyDateRange); $('#resetDateRange').addEventListener('click', () => { defaultDateRange(); applyDateRange(); });
+    $('#applyDateRange').addEventListener('click', () => { $('#rangeSixMonths').setAttribute('aria-pressed', 'false'); $('#rangeThreeMonths').setAttribute('aria-pressed', 'false'); applyDateRange(); });
+    $('#rangeSixMonths').addEventListener('click', () => { defaultDateRange(6); $('#rangeSixMonths').setAttribute('aria-pressed', 'true'); $('#rangeThreeMonths').setAttribute('aria-pressed', 'false'); applyDateRange(); });
+    $('#rangeThreeMonths').addEventListener('click', () => { defaultDateRange(3); $('#rangeSixMonths').setAttribute('aria-pressed', 'false'); $('#rangeThreeMonths').setAttribute('aria-pressed', 'true'); applyDateRange(); });
     document.querySelectorAll('[data-town]').forEach((button) => button.addEventListener('click', () => {
       selectedTown = button.dataset.town;
       document.querySelectorAll('[data-town]').forEach((option) => option.setAttribute('aria-pressed', String(option === button)));
       applyDateRange();
     }));
-    defaultDateRange(); applyDateRange();
+    defaultDateRange(6); $('#rangeSixMonths').setAttribute('aria-pressed', 'true'); $('#rangeThreeMonths').setAttribute('aria-pressed', 'false'); applyDateRange();
   } catch { document.querySelector('main').replaceWith($('#errorTemplate').content.cloneNode(true)); }
 }
 init();
