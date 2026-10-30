@@ -26,7 +26,7 @@
         <div class="scope"><span>FTIR detections</span><span>Monthly trends</span><span id="dateCoverage">Loading date coverage…</span></div>
       </section>
       <section class="wrap section" aria-labelledby="trend-title">
-        <div class="section-head"><div><p class="kicker">Over time</p><h2 id="trend-title">Monthly share of samples</h2></div><p class="muted">Each point is the percentage of that month’s samples that mentioned the substance. This adjusts for months with different sample totals.</p></div>
+        <div class="section-head"><div><p class="kicker">Over time</p><h2 id="trend-title">Monthly share of suspected opioid samples</h2></div><p class="muted">Each point is the percentage of suspected opioid samples collected that month that mentioned the substance.</p></div>
       <section class="date-range-toolbar" aria-label="Choose a date range for the trends">
         <div class="date-toolbar-heading"><p class="kicker">Filter this chart</p><p class="muted">Defaults to the past six months. Choose a quick range or set dates.</p></div>
         <div class="date-controls"><label>From<input id="dateStart" type="date" /></label><label>Through<input id="dateEnd" type="date" /></label><button class="range-button" id="applyDateRange" type="button">Apply dates</button><div class="range-presets" role="group" aria-label="Quick date ranges"><button class="range-button secondary" id="rangeSixMonths" type="button" aria-pressed="true">6 months</button><button class="range-button secondary" id="rangeThreeMonths" type="button" aria-pressed="false">3 months</button></div></div>
@@ -34,8 +34,8 @@
         <p id="dateRangeStatus" class="date-range-status" aria-live="polite">Loading date range…</p>
         <p id="dateRangeError" class="date-range-error" role="alert" hidden></p>
       </section>
-        <article class="panel trend-panel combined-trend-panel"><div class="panel-head"><div><p class="kicker">Monthly detection rate</p><h2>Xylazine and medetomidine</h2></div></div><div class="chart-wrap"><svg id="combinedTrendChart" role="img" aria-label="Monthly percentage of samples mentioning xylazine and medetomidine"></svg></div><div class="chart-legend"><span><i class="legend-line xylazine-line"></i>Xylazine</span><span><i class="legend-line medetomidine-line"></i>Medetomidine</span></div></article>
-        <p class="fine-print trend-note">These are mentions in FTIR substance descriptions in the published records. A sample may list multiple substances. Month-to-month shares can vary when few samples were acquired.</p>
+        <article class="panel trend-panel combined-trend-panel"><div class="panel-head"><div><p class="kicker">Monthly detection rate</p><h2>Xylazine and medetomidine</h2></div></div><div class="chart-wrap"><svg id="combinedTrendChart" role="img" aria-label="Monthly percentage of suspected opioid samples mentioning xylazine and medetomidine"></svg></div><div class="chart-legend"><span><i class="legend-line xylazine-line"></i>Xylazine</span><span><i class="legend-line medetomidine-line"></i>Medetomidine</span></div></article>
+        <p class="fine-print trend-note">These are mentions in FTIR substance descriptions among suspected opioid samples in the published records. A sample may list multiple substances. Month-to-month shares can vary when few samples were acquired.</p>
       </section>
       <section class="wrap section" aria-labelledby="expected-title">
         <div class="section-head"><div><p class="kicker">Suspected opioid samples</p><h2 id="expected-title">How often each signal appears</h2></div><p class="muted">Detection rate = FTIR mentions ÷ samples marked as a suspected opioid.</p></div>
@@ -56,6 +56,6 @@
     </main>
     <footer class="wrap"><span>STREETCHECK / TRENDS</span><span>For harm-reduction insight, not individual identification.</span></footer>
       <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>Sample data could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
-    <script src="trends.js?v=trend-no-overlap-1"></script>
+    <script src="trends.js?v=opioid-monthly-axis-1"></script>
   </body>
 </html>

@@ -1,5 +1,6 @@
 const $ = (selector) => document.querySelector(selector);
 const colors = { xylazine: '#d8fa66', medetomidine: '#ff796a' };
+const opioidPattern = /\b(fentanyl|heroin|hydrocodone|hydromorphone|oxycodone|oxymorphone|morphine|codeine|methadone|levomethadyl|buprenorphine|suboxone|nitazene|opioid|opiate|percocet|perc30|oc30|m30|vicodin|norco|tramadol|meperidine|tapentadol|oxy)\b/i;
 let allRecords = [];
 let selectedTown = 'grand rapids';
 const themeToggle = $('#themeToggle');
@@ -43,15 +44,14 @@ function renderCombinedChart(rows) {
   const series = [['xylazine', 'xylazineShare', colors.xylazine], ['medetomidine', 'medetomidineShare', colors.medetomidine]];
   const lines = series.map(([name, field, color]) => {
     const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${y(point[field]).toFixed(1)}`).join(' ');
-    const markers = points.map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${y(point[field]).toFixed(1)}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point[field] * 100).toFixed(1)}% (${point[name]} of ${point.total} samples)</title></circle>`).join('');
+    const markers = points.map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${y(point[field]).toFixed(1)}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point[field] * 100).toFixed(1)}% (${point[name]} of ${point.total} suspected opioid samples)</title></circle>`).join('');
     return `<path d="${line}" class="trend-line" stroke="${color}"/>${markers}`;
   }).join('');
   const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 14}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
   const grid = [0, .5, 1].map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 10}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">percent of samples acquired that month</text>${lines}${labels}`;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">percent of suspected opioid samples collected each month</text>${lines}${labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
-  const opioidPattern = /\b(fentanyl|heroin|hydrocodone|hydromorphone|oxycodone|oxymorphone|morphine|codeine|methadone|levomethadyl|buprenorphine|suboxone|nitazene|opioid|opiate|percocet|perc30|oc30|m30|vicodin|norco|tramadol|meperidine|tapentadol|oxy)\b/i;
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
   records.forEach((record) => {
     if (!opioidPattern.test(String(record.suspected || ''))) return;
@@ -72,7 +72,7 @@ function renderLabSubstanceAverage(records) {
   $('#labSubstanceSampleCount').textContent = `${counts.length.toLocaleString()} samples with complementary lab results`;
 }
 function render(records) {
-  const dated = records.map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
+  const dated = records.filter((record) => opioidPattern.test(String(record.suspected || ''))).map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
   const months = new Map();
   dated.forEach((record) => { if (!months.has(record.month)) months.set(record.month, { key: record.month, total: 0, xylazine: 0, medetomidine: 0 }); const item = months.get(record.month); item.total += 1; if (/xylazine/i.test(record.ftirSubstances || '')) item.xylazine += 1; if (/medetomidine/i.test(record.ftirSubstances || '')) item.medetomidine += 1; });
   const rows = [...months.values()];
