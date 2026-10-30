@@ -26,7 +26,8 @@ jobs:
       - name: Assemble static site
         run: |
           mkdir _site
-          cp index.html trends.js samples.html samples.js sample.html sample.js styles.css sample.css _site/
+          cp index.html trends.js samples.html samples.js sample.html sample.js resources.html resources.js styles.css sample.css _site/
+          cp -R assets _site/assets
           cp -R data _site/data
       - uses: actions/upload-pages-artifact@v3
         with:
