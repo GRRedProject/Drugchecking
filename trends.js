@@ -10,7 +10,21 @@ function applyTheme(theme) { document.documentElement.dataset.theme = theme; con
 applyTheme(localStorage.getItem('streetcheck-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
 themeToggle.addEventListener('click', () => { const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark'; localStorage.setItem('streetcheck-theme', next); applyTheme(next); });
 const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
-function monthKey(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
+function parseSampleDate(value) {
+  const raw = String(value || '').trim();
+  const usDate = raw.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*(AM|PM))?)?$/i);
+  if (usDate) {
+    const [, month, day, year, hour = '0', minute = '0', second = '0', meridiem = ''] = usDate;
+    let hours = Number(hour);
+    if (meridiem) hours = hours % 12 + (meridiem.toUpperCase() === 'PM' ? 12 : 0);
+    const date = new Date(Number(year), Number(month) - 1, Number(day), hours, Number(minute), Number(second));
+    if (date.getFullYear() !== Number(year) || date.getMonth() !== Number(month) - 1 || date.getDate() !== Number(day)) return null;
+    return date;
+  }
+  const date = new Date(raw);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+function monthKey(value) { const date = parseSampleDate(value); return !date ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
 function monthLabel(key) { const [year, month] = key.split('-').map(Number); return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); }
 function splitNames(value) { return String(value || '').split('|').map((name) => name.trim()).filter(Boolean); }
 const labAliases = new Map([
@@ -98,7 +112,7 @@ function applyDateRange() {
     const matchesTown = selectedTown === 'both' ? town === 'muskegon' || town === 'grand rapids' : town === selectedTown;
     if (!matchesTown) return false;
     if (!start && !end) return true;
-    const acquired = new Date(record.acquiredOn); if (Number.isNaN(acquired.getTime())) return false;
+    const acquired = parseSampleDate(record.acquiredOn); if (!acquired) return false;
     return (!start || acquired >= start) && (!end || acquired <= end);
   });
   render(selected);
