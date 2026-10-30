@@ -1,6 +1,6 @@
 # StreetCheck findings dashboard
 
-A GitHub Pages site with two views of StreetCheck drug-checking results: xylazine and medetomidine trends over time, and a searchable sample explorer with individual record details.
+A GitHub Pages site with three views: xylazine and medetomidine trends over time, a searchable sample explorer with individual record details, and a resources page for West Michigan harm reduction, drug checking, naloxone, treatment, and support.
 
 The trend charts count FTIR substance descriptions that mention each substance. The line shows that count as a share of all samples acquired in the same month. The bars use the left axis and the share line uses the right axis.
 
