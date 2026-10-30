@@ -19,10 +19,6 @@
         <p class="hero-copy">Explore how often xylazine and medetomidine appear in FTIR results, and how their share of all samples in each period changes over time.</p>
         <div class="scope"><span>FTIR detections</span><span>Monthly trends</span><span id="dateCoverage">Loading date coverage…</span></div>
       </section>
-      <section class="wrap section" aria-labelledby="snapshot-title">
-        <div class="section-head"><div><p class="kicker">Latest snapshot</p><h2 id="snapshot-title">Signals in the dataset</h2></div><p id="refreshNote" class="muted">Loading published records…</p></div>
-        <div class="metrics" id="metrics"></div>
-      </section>
       <section class="wrap section" aria-labelledby="trend-title">
         <div class="section-head"><div><p class="kicker">Over time</p><h2 id="trend-title">Monthly share of samples</h2></div><p class="muted">Each point is the percentage of that month’s samples that mentioned the substance. This adjusts for months with different sample totals.</p></div>
       <section class="date-range-toolbar" aria-label="Choose a date range for the trends">
@@ -50,6 +46,6 @@
     </main>
     <footer class="wrap"><span>STREETCHECK / TRENDS</span><span>For harm-reduction insight, not individual identification.</span></footer>
     <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>The published data snapshot could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
-    <script src="trends.js?v=combined-chart-1"></script>
+    <script src="trends.js?v=remove-snapshot-1"></script>
   </body>
 </html>
