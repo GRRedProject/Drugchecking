@@ -1,8 +1,10 @@
 const $ = (selector) => document.querySelector(selector);
-const colors = { xylazine: '#d8fa66', medetomidine: '#ff796a' };
+const seriesColors = ['#2068a8', '#dc5147', '#448353', '#8657a6', '#d18b25', '#168c8c', '#b24f83', '#66727f', '#8b6d36', '#417ca3'];
 const opioidPattern = /\b(fentanyl|heroin|hydrocodone|hydromorphone|oxycodone|oxymorphone|morphine|codeine|methadone|levomethadyl|buprenorphine|suboxone|nitazene|opioid|opiate|percocet|perc30|oc30|m30|vicodin|norco|tramadol|meperidine|tapentadol|oxy)\b/i;
 let allRecords = [];
 let selectedTown = 'grand rapids';
+let contaminantNames = [];
+let selectedContaminants = new Set();
 const themeToggle = $('#themeToggle');
 function applyTheme(theme) { document.documentElement.dataset.theme = theme; const dark = theme === 'dark'; themeToggle.querySelector('.theme-label').textContent = dark ? 'Light' : 'Dark'; themeToggle.setAttribute('aria-label', `Switch to ${dark ? 'light' : 'dark'} theme`); themeToggle.title = themeToggle.getAttribute('aria-label'); }
 applyTheme(localStorage.getItem('streetcheck-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
@@ -10,6 +12,42 @@ themeToggle.addEventListener('click', () => { const next = document.documentElem
 const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (character) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[character]));
 function monthKey(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
 function monthLabel(key) { const [year, month] = key.split('-').map(Number); return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); }
+function splitNames(value) { return String(value || '').split('|').map((name) => name.trim()).filter(Boolean); }
+function uniqueNames(records, field) {
+  const names = new Map();
+  records.forEach((record) => splitNames(record[field]).forEach((name) => { const key = name.toLocaleLowerCase(); if (!names.has(key)) names.set(key, name); }));
+  return [...names.values()].sort((a, b) => a.localeCompare(b));
+}
+function populateTrendFilters(records) {
+  const suspectedSelect = $('#suspectedDrugFilter');
+  uniqueNames(records, 'suspected').forEach((name) => { const option = document.createElement('option'); option.value = name.toLocaleLowerCase(); option.textContent = name; suspectedSelect.append(option); });
+  contaminantNames = uniqueNames(records, 'ftirSubstances');
+  selectedContaminants = new Set(contaminantNames.filter((name) => ['xylazine', 'medetomidine'].includes(name.toLocaleLowerCase())).map((name) => name.toLocaleLowerCase()));
+  renderContaminantOptions();
+  $('#contaminantSearch').addEventListener('input', renderContaminantOptions);
+  $('#clearContaminants').addEventListener('click', () => { selectedContaminants.clear(); renderContaminantOptions(); applyDateRange(); });
+  suspectedSelect.addEventListener('change', applyDateRange);
+}
+function renderContaminantOptions() {
+  const options = $('#contaminantOptions'); const query = $('#contaminantSearch').value.trim().toLocaleLowerCase(); options.replaceChildren();
+  const visibleNames = contaminantNames.filter((name) => name.toLocaleLowerCase().includes(query));
+  visibleNames.forEach((name) => {
+    const label = document.createElement('label'); label.className = 'contaminant-option';
+    const checkbox = document.createElement('input'); checkbox.type = 'checkbox'; checkbox.value = name.toLocaleLowerCase(); checkbox.checked = selectedContaminants.has(checkbox.value);
+    checkbox.addEventListener('change', () => { if (checkbox.checked) selectedContaminants.add(checkbox.value); else selectedContaminants.delete(checkbox.value); updateContaminantCount(); applyDateRange(); });
+    const text = document.createElement('span'); text.textContent = name; label.append(checkbox, text); options.append(label);
+  });
+  if (!visibleNames.length) { const empty = document.createElement('p'); empty.className = 'contaminant-empty'; empty.textContent = 'No matching FTIR results.'; options.append(empty); }
+  updateContaminantCount();
+}
+function updateContaminantCount() { const count = selectedContaminants.size; $('#contaminantSelectionCount').textContent = count ? `${count} selected` : 'Select contaminants'; }
+function selectedSuspectedLabel() { return $('#suspectedDrugFilter').selectedOptions[0]?.textContent || 'selected suspected drugs'; }
+function filterSuspectedRecords(records) {
+  const value = $('#suspectedDrugFilter').value;
+  if (value === '__opioids__') return records.filter((record) => opioidPattern.test(String(record.suspected || '')));
+  if (value === '__all__') return records.filter((record) => splitNames(record.suspected).length);
+  return records.filter((record) => splitNames(record.suspected).some((name) => name.toLocaleLowerCase() === value));
+}
 function dateInputValue(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 function dateFromInput(value, endOfDay = false) { if (!value) return null; const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0); }
 function defaultDateRange(months = 6) {
@@ -36,20 +74,23 @@ function applyDateRange() {
   const townLabel = selectedTown === 'both' ? 'Muskegon + Grand Rapids' : selectedTown === 'muskegon' ? 'Muskegon' : 'Grand Rapids';
   $('#dateRangeStatus').textContent = `Showing ${selected.length.toLocaleString()} samples · ${townLabel} · ${from} to ${through}`;
 }
-function renderCombinedChart(rows) {
+function renderCombinedChart(rows, contaminants) {
   const svg = $('#combinedTrendChart'); const width = 900; const height = 320; const left = 54; const right = 24; const top = 28; const bottom = 48; const plotWidth = width - left - right; const plotHeight = height - top - bottom;
-  const points = rows.map((row, index) => ({ ...row, x: left + (rows.length <= 1 ? plotWidth / 2 : index * plotWidth / (rows.length - 1)), xylazineShare: row.total ? row.xylazine / row.total : 0, medetomidineShare: row.total ? row.medetomidine / row.total : 0 }));
-  const highestShare = Math.max(0, ...points.flatMap((point) => [point.xylazineShare, point.medetomidineShare])); const maxShare = highestShare === 0 ? .05 : Math.min(1, Math.ceil(highestShare * 20) / 20);
+  const series = contaminants.map((name, index) => ({ name, key: name.toLocaleLowerCase(), color: seriesColors[index % seriesColors.length] }));
+  const legend = $('#trendLegend'); legend.replaceChildren();
+  series.forEach((item) => { const entry = document.createElement('span'); const swatch = document.createElement('i'); swatch.className = 'trend-legend-swatch'; swatch.style.backgroundColor = item.color; entry.append(swatch, document.createTextNode(item.name)); legend.append(entry); });
+  const points = rows.map((row, index) => ({ ...row, x: left + (rows.length <= 1 ? plotWidth / 2 : index * plotWidth / (rows.length - 1)), shares: series.map((item) => row.total ? (row.detections[item.key] || 0) / row.total : 0) }));
+  const highestShare = Math.max(0, ...points.flatMap((point) => point.shares)); const maxShare = highestShare === 0 ? .05 : Math.min(1, Math.ceil(highestShare * 20) / 20);
   const y = (share) => top + plotHeight - share / maxShare * plotHeight;
-  const series = [['xylazine', 'xylazineShare', colors.xylazine], ['medetomidine', 'medetomidineShare', colors.medetomidine]];
-  const lines = series.map(([name, field, color]) => {
-    const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${y(point[field]).toFixed(1)}`).join(' ');
-    const markers = points.map((point) => `<circle cx="${point.x.toFixed(1)}" cy="${y(point[field]).toFixed(1)}" r="4" fill="${color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point[field] * 100).toFixed(1)}% (${point[name]} of ${point.total} suspected opioid samples)</title></circle>`).join('');
-    return `<path d="${line}" class="trend-line" stroke="${color}"/>${markers}`;
+  const lines = series.map((item, seriesIndex) => {
+    const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${y(point.shares[seriesIndex]).toFixed(1)}`).join(' ');
+    const markers = points.map((point) => { const hits = point.detections[item.key] || 0; return `<circle cx="${point.x.toFixed(1)}" cy="${y(point.shares[seriesIndex]).toFixed(1)}" r="4" fill="${item.color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point.shares[seriesIndex] * 100).toFixed(1)}% (${hits} of ${point.total} samples)</title></circle>`; }).join('');
+    return line ? `<path d="${line}" class="trend-line" stroke="${item.color}"/>${markers}` : '';
   }).join('');
   const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 14}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
   const grid = [0, .5, 1].map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 10}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">percent of suspected opioid samples collected that month</text>${lines}${labels}`;
+  const message = !series.length ? 'Select at least one contaminant to display the chart.' : !rows.length ? 'No dated samples match these filters.' : '';
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of ${selectedSuspectedLabel()} samples with selected FTIR contaminants`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of selected samples collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
@@ -72,18 +113,26 @@ function renderLabSubstanceAverage(records) {
   $('#labSubstanceSampleCount').textContent = `${counts.length.toLocaleString()} samples with complementary lab results`;
 }
 function render(records) {
-  const dated = records.filter((record) => opioidPattern.test(String(record.suspected || ''))).map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
+  const contaminants = contaminantNames.filter((name) => selectedContaminants.has(name.toLocaleLowerCase()));
+  const chartRecords = filterSuspectedRecords(records);
+  const dated = chartRecords.map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
   const months = new Map();
-  dated.forEach((record) => { if (!months.has(record.month)) months.set(record.month, { key: record.month, total: 0, xylazine: 0, medetomidine: 0 }); const item = months.get(record.month); item.total += 1; if (/xylazine/i.test(record.ftirSubstances || '')) item.xylazine += 1; if (/medetomidine/i.test(record.ftirSubstances || '')) item.medetomidine += 1; });
+  dated.forEach((record) => {
+    if (!months.has(record.month)) months.set(record.month, { key: record.month, total: 0, detections: Object.create(null) });
+    const item = months.get(record.month); item.total += 1;
+    const detected = new Set(splitNames(record.ftirSubstances).map((name) => name.toLocaleLowerCase()));
+    contaminants.forEach((name) => { const key = name.toLocaleLowerCase(); if (detected.has(key)) item.detections[key] = (item.detections[key] || 0) + 1; });
+  });
   const rows = [...months.values()];
   $('#dateCoverage').textContent = rows.length ? `${monthLabel(rows[0].key)} to ${monthLabel(rows.at(-1).key)}` : 'No dated records';
-  renderCombinedChart(rows);
+  renderCombinedChart(rows, contaminants);
   renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected');
   renderLabSubstanceAverage(records);
 }
 async function init() {
   try {
     const response = await fetch('data/records.json'); if (!response.ok) throw new Error('Data unavailable'); allRecords = (await response.json()).records || [];
+    populateTrendFilters(allRecords);
     $('#applyDateRange').addEventListener('click', () => { $('#rangeSixMonths').setAttribute('aria-pressed', 'false'); $('#rangeThreeMonths').setAttribute('aria-pressed', 'false'); applyDateRange(); });
     $('#rangeSixMonths').addEventListener('click', () => { defaultDateRange(6); $('#rangeSixMonths').setAttribute('aria-pressed', 'true'); $('#rangeThreeMonths').setAttribute('aria-pressed', 'false'); applyDateRange(); });
     $('#rangeThreeMonths').addEventListener('click', () => { defaultDateRange(3); $('#rangeSixMonths').setAttribute('aria-pressed', 'false'); $('#rangeThreeMonths').setAttribute('aria-pressed', 'true'); applyDateRange(); });

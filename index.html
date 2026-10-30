@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Dela+Gothic+One&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=ftir-aligned-with-heading-1" />
+    <link rel="stylesheet" href="styles.css?v=trend-filters-1" />
   </head>
   <body>
     <main>
@@ -26,7 +26,7 @@
         <figure class="trends-banner"><img src="assets/ftir-spectrometer-illustration.png" alt="Illustration of an FTIR spectrometer analyzing a sample, with a spectrum displayed on a monitor." /></figure>
       </section>
       <section class="wrap section" aria-labelledby="trend-title">
-        <div class="section-head"><div><h2 id="trend-title">Monthly share of suspected opioid samples</h2></div><p class="muted">Each point is the percentage of suspected opioid samples collected that month that mentioned the substance.</p></div>
+        <div class="section-head"><div><h2 id="trend-title">Monthly FTIR detection rates</h2></div><p class="muted">Choose a suspected drug and one or more FTIR results to compare their monthly percentages.</p></div>
       <section class="date-range-toolbar" aria-label="Choose a date range for the trends">
         <div class="date-toolbar-heading"><p class="kicker">Filter this chart</p><p class="muted">Defaults to the past six months. Choose a quick range or set dates.</p></div>
         <div class="date-controls"><label>From<input id="dateStart" type="date" /></label><label>Through<input id="dateEnd" type="date" /></label><button class="range-button" id="applyDateRange" type="button">Apply dates</button><div class="range-presets" role="group" aria-label="Quick date ranges"><button class="range-button secondary" id="rangeSixMonths" type="button" aria-pressed="true">6 months</button><button class="range-button secondary" id="rangeThreeMonths" type="button" aria-pressed="false">3 months</button></div></div>
@@ -34,8 +34,12 @@
         <p id="dateRangeStatus" class="date-range-status" aria-live="polite">Loading date range…</p>
         <p id="dateRangeError" class="date-range-error" role="alert" hidden></p>
       </section>
-        <article class="panel trend-panel combined-trend-panel"><div class="panel-head"><div><p class="kicker">Monthly detection rate</p><h2>Xylazine and medetomidine</h2></div></div><div class="chart-wrap"><svg id="combinedTrendChart" role="img" aria-label="Monthly percentage of suspected opioid samples mentioning xylazine and medetomidine"></svg></div><div class="chart-legend"><span><i class="legend-line xylazine-line"></i>Xylazine</span><span><i class="legend-line medetomidine-line"></i>Medetomidine</span></div></article>
-        <p class="fine-print trend-note">These are mentions in FTIR substance descriptions among suspected opioid samples in the published records. A sample may list multiple substances. Month-to-month shares can vary when few samples were acquired.</p>
+        <div class="trend-filter-controls" aria-label="Filter the monthly chart">
+          <label class="trend-select-label" for="suspectedDrugFilter">Suspected drug<select id="suspectedDrugFilter"><option value="__opioids__">All suspected opioids</option><option value="__all__">All suspected drugs</option></select></label>
+          <div class="contaminant-filter"><span class="trend-control-label" id="contaminantFilterLabel">FTIR contaminants</span><details id="contaminantPicker"><summary><span id="contaminantSelectionCount">Loading contaminants…</span></summary><div class="contaminant-menu"><input id="contaminantSearch" type="search" placeholder="Search contaminants" aria-label="Search FTIR contaminants"><div id="contaminantOptions" class="contaminant-options" role="group" aria-labelledby="contaminantFilterLabel"></div><button id="clearContaminants" class="clear-contaminants" type="button">Clear selections</button></div></details></div>
+        </div>
+        <article class="panel trend-panel combined-trend-panel"><div class="panel-head"><div><h2>Monthly contaminant rates</h2></div></div><div class="chart-wrap"><svg id="combinedTrendChart" role="img" aria-label="Monthly percentage of samples matching the selected filters"></svg></div><div id="trendLegend" class="chart-legend" aria-label="Chart legend"></div></article>
+        <p class="fine-print trend-note">Each line shows samples whose FTIR results mention the selected contaminant, as a share of samples matching the suspected-drug selection that month. A sample may list multiple substances. Month-to-month shares can vary when few samples were collected.</p>
       </section>
       <section class="wrap section" aria-labelledby="expected-title">
         <div class="section-head"><div><p class="kicker">Suspected opioid samples</p><h2 id="expected-title">How often each signal appears</h2></div><p class="muted">Detection rate = FTIR mentions ÷ samples marked as a suspected opioid.</p></div>
@@ -56,6 +60,6 @@
     </main>
       <footer class="wrap"><span>STREETCHECK / DRUG TRENDS</span><span>For harm-reduction insight, not individual identification.</span></footer>
       <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>Sample data could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
-    <script src="trends.js?v=opioid-monthly-axis-2"></script>
+    <script src="trends.js?v=trend-filters-1"></script>
   </body>
 </html>
