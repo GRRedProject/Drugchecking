@@ -16,3 +16,6 @@
 .location-filter{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.location-filter-label{color:var(--muted);font:500 11px 'DM Mono',monospace;text-transform:uppercase;letter-spacing:.04em}.location-buttons{display:inline-flex;border:1px solid var(--line);border-radius:4px;overflow:hidden}.location-button{min-height:36px;padding:8px 14px;border:0;border-right:1px solid var(--line);background:var(--surface);color:var(--ink);font:700 11px Manrope,sans-serif;cursor:pointer}.location-button:last-child{border-right:0}.location-button[aria-pressed="true"]{background:var(--ink);color:var(--on-ink)}.location-button:focus-visible{outline:2px solid var(--pine);outline-offset:-3px}
 
 .sample-detail-grid{gap:14px 16px;overflow:visible;border:0;background:transparent}.sample-detail-grid .detail-item{padding:18px;border:1px solid var(--line)}
+
+.brand-logo{display:block;width:clamp(155px,18vw,205px);height:auto;max-height:50px;object-fit:contain}
+@media(max-width:500px){.brand-logo{width:145px;max-height:42px}}
