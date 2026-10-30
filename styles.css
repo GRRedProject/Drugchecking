@@ -21,3 +21,5 @@
 @media(max-width:500px){.brand-logo{width:145px;max-height:42px}}
 
 .result-cell{min-width:210px;max-width:380px;white-space:normal;line-height:1.5;overflow-wrap:anywhere}.table-scroll table{min-width:1120px}.sample-detail-grid .detail-item{line-height:1.5}
+
+.detail-section{grid-column:1/-1;padding:2px 0 12px}.detail-section h3{margin:0 0 12px;color:var(--pine);font-size:14px;font-weight:700}.detail-group{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px 14px}.detail-section + .detail-section{padding-top:18px;border-top:1px solid var(--line)}@media(max-width:900px){.detail-group{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:600px){.detail-group{grid-template-columns:repeat(2,minmax(0,1fr))}}
