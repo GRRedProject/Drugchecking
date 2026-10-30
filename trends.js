@@ -49,7 +49,7 @@ function renderCombinedChart(rows) {
   }).join('');
   const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 14}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
   const grid = [0, .5, 1].map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 10}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">percent of suspected opioid samples collected each month</text>${lines}${labels}`;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">percent of suspected opioid samples collected that month</text>${lines}${labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
