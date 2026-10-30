@@ -20,4 +20,4 @@
 .brand-logo{display:block;width:clamp(155px,18vw,205px);height:auto;max-height:50px;object-fit:contain}
 @media(max-width:500px){.brand-logo{width:145px;max-height:42px}}
 
-.result-cell{min-width:210px;max-width:380px;white-space:normal;line-height:1.5;overflow-wrap:anywhere}.table-scroll table{min-width:1320px}.sample-detail-grid .detail-item{line-height:1.5}
+.result-cell{min-width:210px;max-width:380px;white-space:normal;line-height:1.5;overflow-wrap:anywhere}.table-scroll table{min-width:1120px}.sample-detail-grid .detail-item{line-height:1.5}
