@@ -23,12 +23,12 @@
         <div class="section-head"><div><p class="kicker">Sample explorer</p><h2 id="explorer-title">Browse individual records</h2></div><p id="refreshNote" class="muted">Loading published records…</p></div>
         <div class="filters"><label class="search"><span>Search samples</span><input id="searchInput" type="search" placeholder="Lab code, substance, town, form…" /></label><label><span>FTS result</span><select id="ftsFilter"><option value="">All results</option></select></label><label><span>Sample form</span><select id="formFilter"><option value="">All forms</option></select></label></div>
         <p class="results-count" id="resultsCount"></p>
-        <div class="table-scroll"><table><thead><tr><th>Lab code</th><th>Acquired</th><th>Form</th><th>Suspected / sold as</th><th>FTIR substances</th><th>FTS @ 1 mL</th><th>Area</th><th>Details</th></tr></thead><tbody id="recordRows"></tbody></table></div>
+        <div class="table-scroll"><table><thead><tr><th>Lab code</th><th>Acquired</th><th>Form</th><th>Suspected substance</th><th>FTIR substances</th><th>FTS @ 1 mL</th><th>Town</th><th>Details</th></tr></thead><tbody id="recordRows"></tbody></table></div>
         <div class="pager"><button type="button" id="previousPage">← Previous</button><span id="pageLabel"></span><button type="button" id="nextPage">Next →</button></div>
       </section>
     </main>
     <footer class="wrap"><span>STREETCHECK / SAMPLE EXPLORER</span><span>For harm-reduction insight, not individual identification.</span></footer>
     <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>The published data snapshot could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
-    <script src="samples.js?v=hide-untested-ph-1"></script>
+    <script src="samples.js?v=hide-extra-fields-1"></script>
   </body>
 </html>
