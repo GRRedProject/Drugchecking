@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Explore xylazine and medetomidine signals in StreetCheck drug-checking results over time." />
-    <title>StreetCheck | Trends</title>
+    <title>StreetCheck | Drug Trends</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Dela+Gothic+One&family=Work+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -12,7 +12,7 @@
   </head>
   <body>
     <main>
-      <nav class="nav wrap"><a class="brand" href="index.html"><img class="brand-logo" src="assets/grand-rapids-red-project-logo.png" alt="Grand Rapids Red Project"><span class="brand-title">Drug Checking</span></a><div class="nav-actions"><a class="page-link active" href="index.html" aria-current="page">Trends</a><a class="page-link" href="samples.html">Explore samples</a><a class="page-link" href="resources.html">Resources</a><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button></div></nav>
+      <nav class="nav wrap"><a class="brand" href="index.html"><img class="brand-logo" src="assets/grand-rapids-red-project-logo.png" alt="Grand Rapids Red Project"><span class="brand-title">Drug Checking</span></a><div class="nav-actions"><a class="page-link active" href="index.html" aria-current="page">Drug Trends</a><a class="page-link" href="samples.html">Explore samples</a><a class="page-link" href="resources.html">Resources</a><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button></div></nav>
       <section class="hours-strip wrap" aria-labelledby="hours-title">
         <div class="hours-heading"><p class="kicker">Visit us</p><h2 id="hours-title">Hours</h2></div>
         <article class="hours-card"><span>Grand Rapids</span><strong>10 AM–4 PM</strong><small>Monday–Friday</small></article>
@@ -20,8 +20,7 @@
       </section>
       <section class="hero trends-hero wrap" id="top">
         <div class="trends-hero-copy"><p class="kicker">Drug-checking intelligence / local view</p>
-          <h1>Trends</h1>
-          <p class="hero-copy">Explore what percentage of suspected opioid samples each month mentioned xylazine or medetomidine.</p>
+          <h1>Drug Trends</h1>
           <div class="scope"><span>FTIR detections</span><span>Monthly trends</span><span id="dateCoverage">Loading date coverage…</span></div>
         </div>
         <figure class="trends-banner"><img src="assets/ftir-spectrometer-illustration.png" alt="Illustration of an FTIR spectrometer analyzing a sample, with a spectrum displayed on a monitor." /></figure>
@@ -55,7 +54,7 @@
         <article class="panel reading-panel"><p class="kicker">Reading the data</p><h2>FTIR descriptions show detections</h2><p class="trend-copy">The trends count a substance when its name appears in the FTIR result. They describe this dataset, not the prevalence of a substance in the wider drug supply.</p><a class="text-link" href="samples.html">Open the sample explorer →</a></article>
       </section>
     </main>
-    <footer class="wrap"><span>STREETCHECK / TRENDS</span><span>For harm-reduction insight, not individual identification.</span></footer>
+      <footer class="wrap"><span>STREETCHECK / DRUG TRENDS</span><span>For harm-reduction insight, not individual identification.</span></footer>
       <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>Sample data could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
     <script src="trends.js?v=opioid-monthly-axis-2"></script>
   </body>
