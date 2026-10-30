@@ -13,15 +13,21 @@ const escapeHTML = (value) => String(value ?? '').replace(/[&<>"']/g, (character
 function monthKey(value) { const date = new Date(value); return Number.isNaN(date.getTime()) ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
 function monthLabel(key) { const [year, month] = key.split('-').map(Number); return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); }
 function splitNames(value) { return String(value || '').split('|').map((name) => name.trim()).filter(Boolean); }
+function labSubstances(record) { return splitNames(record.labTestingSubstances || record.labTestingResults).map((name) => name.replace(/\s+\((?:primary|trace|major)\)$/i, '').trim()).filter(Boolean); }
 function uniqueNames(records, field) {
   const names = new Map();
   records.forEach((record) => splitNames(record[field]).forEach((name) => { const key = name.toLocaleLowerCase(); if (!names.has(key)) names.set(key, name); }));
   return [...names.values()].sort((a, b) => a.localeCompare(b));
 }
+function uniqueLabNames(records) {
+  const names = new Map();
+  records.forEach((record) => labSubstances(record).forEach((name) => { const key = name.toLocaleLowerCase(); if (!names.has(key)) names.set(key, name); }));
+  return [...names.values()].sort((a, b) => a.localeCompare(b));
+}
 function populateTrendFilters(records) {
   const suspectedSelect = $('#suspectedDrugFilter');
   uniqueNames(records, 'suspected').forEach((name) => { const option = document.createElement('option'); option.value = name.toLocaleLowerCase(); option.textContent = name; suspectedSelect.append(option); });
-  contaminantNames = uniqueNames(records, 'ftirSubstances');
+  contaminantNames = uniqueLabNames(records);
   selectedContaminants = new Set(contaminantNames.filter((name) => ['xylazine', 'medetomidine'].includes(name.toLocaleLowerCase())).map((name) => name.toLocaleLowerCase()));
   renderContaminantOptions();
   $('#contaminantSearch').addEventListener('input', renderContaminantOptions);
@@ -37,10 +43,10 @@ function renderContaminantOptions() {
     checkbox.addEventListener('change', () => { if (checkbox.checked) selectedContaminants.add(checkbox.value); else selectedContaminants.delete(checkbox.value); updateContaminantCount(); applyDateRange(); });
     const text = document.createElement('span'); text.textContent = name; label.append(checkbox, text); options.append(label);
   });
-  if (!visibleNames.length) { const empty = document.createElement('p'); empty.className = 'contaminant-empty'; empty.textContent = 'No matching FTIR results.'; options.append(empty); }
+  if (!visibleNames.length) { const empty = document.createElement('p'); empty.className = 'contaminant-empty'; empty.textContent = 'No matching lab results.'; options.append(empty); }
   updateContaminantCount();
 }
-function updateContaminantCount() { const count = selectedContaminants.size; $('#contaminantSelectionCount').textContent = count ? `${count} selected` : 'Select contaminants'; }
+function updateContaminantCount() { const count = selectedContaminants.size; $('#contaminantSelectionCount').textContent = count ? `${count} selected` : 'Select lab results'; }
 function selectedSuspectedLabel() { return $('#suspectedDrugFilter').selectedOptions[0]?.textContent || 'selected suspected drugs'; }
 function filterSuspectedRecords(records) {
   const value = $('#suspectedDrugFilter').value;
@@ -89,8 +95,8 @@ function renderCombinedChart(rows, contaminants) {
   }).join('');
   const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 14}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
   const grid = [0, .5, 1].map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 10}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
-  const message = !series.length ? 'Select at least one contaminant to display the chart.' : !rows.length ? 'No dated samples match these filters.' : '';
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of ${selectedSuspectedLabel()} samples with selected FTIR contaminants`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of selected samples collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
+  const message = !series.length ? 'Select at least one lab result to display the chart.' : !rows.length ? 'No dated samples match these filters.' : '';
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of selected samples collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
@@ -120,7 +126,7 @@ function render(records) {
   dated.forEach((record) => {
     if (!months.has(record.month)) months.set(record.month, { key: record.month, total: 0, detections: Object.create(null) });
     const item = months.get(record.month); item.total += 1;
-    const detected = new Set(splitNames(record.ftirSubstances).map((name) => name.toLocaleLowerCase()));
+    const detected = new Set(labSubstances(record).map((name) => name.toLocaleLowerCase()));
     contaminants.forEach((name) => { const key = name.toLocaleLowerCase(); if (detected.has(key)) item.detections[key] = (item.detections[key] || 0) + 1; });
   });
   const rows = [...months.values()];
