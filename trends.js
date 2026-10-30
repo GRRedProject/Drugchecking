@@ -52,7 +52,8 @@ function uniqueLabNames(records) {
 }
 function populateTrendFilters(records) {
   const suspectedSelect = $('#suspectedDrugFilter');
-  uniqueNames(records, 'suspected').forEach((name) => { const option = document.createElement('option'); option.value = name.toLocaleLowerCase(); option.textContent = name; suspectedSelect.append(option); });
+  const labResultKeys = new Set(records.flatMap((record) => labSubstances(record).map(labKey)));
+  uniqueNames(records, 'suspected').filter((name) => labResultKeys.has(labKey(canonicalLabName(name)))).forEach((name) => { const option = document.createElement('option'); option.value = labKey(canonicalLabName(name)); option.textContent = name; suspectedSelect.append(option); });
   contaminantNames = uniqueLabNames(records);
   selectedContaminants = new Set(contaminantNames.filter((name) => ['xylazine', 'medetomidine'].includes(name.toLocaleLowerCase())).map((name) => name.toLocaleLowerCase()));
   renderContaminantOptions();
@@ -78,7 +79,7 @@ function filterSuspectedRecords(records) {
   const value = $('#suspectedDrugFilter').value;
   if (value === '__opioids__') return records.filter((record) => opioidPattern.test(String(record.suspected || '')));
   if (value === '__all__') return records.filter((record) => splitNames(record.suspected).length);
-  return records.filter((record) => splitNames(record.suspected).some((name) => name.toLocaleLowerCase() === value));
+  return records.filter((record) => splitNames(record.suspected).some((name) => labKey(canonicalLabName(name)) === value));
 }
 function dateInputValue(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 function dateFromInput(value, endOfDay = false) { if (!value) return null; const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0); }
