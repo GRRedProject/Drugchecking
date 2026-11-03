@@ -14,21 +14,21 @@
     <main>
       <nav class="nav wrap"><a class="brand" href="index.html"><img class="brand-logo" src="assets/grand-rapids-red-project-logo.png" alt="Grand Rapids Red Project"><span class="brand-title">Drug Checking</span></a><div class="nav-actions"><a class="page-link" href="index.html">Drug Trends</a><a class="page-link active" href="samples.html" aria-current="page">Explore samples</a><a class="page-link" href="resources.html">Resources</a><button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><span aria-hidden="true">◐</span><span class="theme-label">Dark</span></button></div></nav>
       <section class="hero wrap compact-hero">
-        <p class="kicker">Record-level explorer / local view</p>
+        <p class="kicker">Browse samples</p>
         <h1>Sample Explorer</h1>
-        <p class="hero-copy">Search the published analytical records, then select “View sample” on any row to expand all of its published fields right here.</p>
-        <div class="scope"><span>Newest samples first</span><span>Search and filter</span><span>Contact details excluded</span></div>
+        <p class="hero-copy">Search sample records. Select “View sample” to see more details.</p>
+        <div class="scope"><span>Newest first</span><span>Search samples</span></div>
       </section>
       <section class="wrap section explorer" aria-labelledby="explorer-title">
-        <div class="section-head"><div><p class="kicker">Sample explorer</p><h2 id="explorer-title">Browse individual records</h2></div><p id="refreshNote" class="muted">Loading published records…</p></div>
-        <div class="filters"><label class="search"><span>Search samples</span><input id="searchInput" type="search" placeholder="Lab code, substance, or town…" /></label></div>
+        <div class="section-head"><div><p class="kicker">Samples</p><h2 id="explorer-title">Browse samples</h2></div><p id="refreshNote" class="muted">Loading samples…</p></div>
+        <div class="filters"><label class="search"><span>Search samples</span><input id="searchInput" type="search" placeholder="Lab code, drug, or town" aria-label="Search by lab code, drug, or town" /></label></div>
         <p class="results-count" id="resultsCount"></p>
         <div class="table-scroll"><table><thead><tr><th>Lab code</th><th>Acquired</th><th>FTIR results</th><th>Lab results</th><th>Town</th><th>Details</th></tr></thead><tbody id="recordRows"></tbody></table></div>
         <div class="pager"><button type="button" id="previousPage">← Previous</button><span id="pageLabel"></span><button type="button" id="nextPage">Next →</button></div>
       </section>
     </main>
-    <footer class="wrap"><span>STREETCHECK / SAMPLE EXPLORER</span><span>For harm-reduction insight, not individual identification.</span></footer>
-    <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>Sample data could not be loaded.</h2><p>Refresh the page, or confirm that <code>data/records.json</code> is present in the site deployment.</p></section></template>
-    <script src="samples.js?v=sample-phone-cards-1"></script>
+    <footer class="wrap"><span>STREETCHECK / SAMPLE EXPLORER</span><span>For harm-reduction information. Not for identifying a sample.</span></footer>
+    <template id="errorTemplate"><section class="error wrap"><p class="kicker">Data unavailable</p><h2>Samples could not be loaded.</h2><p>Refresh the page and try again.</p></section></template>
+    <script src="samples.js?v=sample-phone-cards-2"></script>
   </body>
 </html>
