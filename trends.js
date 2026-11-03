@@ -177,7 +177,6 @@ function render(records) {
     contaminants.forEach((name) => { const key = name.toLocaleLowerCase(); if (detected.has(key)) item.detections[key] = (item.detections[key] || 0) + 1; });
   });
   const rows = [...months.values()];
-  $('#dateCoverage').textContent = rows.length ? `${monthLabel(rows[0].key)} to ${monthLabel(rows.at(-1).key)}` : 'No dated records';
   renderCombinedChart(rows, contaminants);
   renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected');
   renderLabSubstanceAverage(records);
