@@ -145,12 +145,11 @@ function renderCombinedChart(rows, contaminants) {
   const message = !series.length ? 'Select at least one lab result to display the chart.' : !rows.length ? 'No dated samples match these filters.' : '';
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of ${escapeHTML(selectedSampleBasis())} collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
 }
-function renderExpectedComparison(records, substance, containerId, resultField = 'ftirSubstances') {
+function renderExpectedComparison(records, substance, containerId, resultField = 'labTestingSubstances') {
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
   records.forEach((record) => {
     if (!opioidPattern.test(String(record.suspected || ''))) return;
-    const results = String(record[resultField] || '').trim();
-    if (resultField === 'labTestingSubstances' && !results) return;
+    const results = String(record[resultField] || (resultField === 'labTestingSubstances' ? record.labTestingResults : '') || '').trim();
     group.total += 1; if (new RegExp(`(?:^|\\|)${substance}(?:$|\\|)`, 'i').test(results)) group.detections += 1;
   });
   const rate = group.total ? group.detections / group.total * 100 : 0; const percent = rate.toFixed(1);
@@ -180,7 +179,7 @@ function render(records) {
   });
   const rows = [...months.values()];
   renderCombinedChart(rows, contaminants);
-  renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected'); renderExpectedComparison(records, 'carfentanil', '#carfentanilExpected', 'labTestingSubstances');
+  renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected'); renderExpectedComparison(records, 'carfentanil', '#carfentanilExpected');
   renderLabSubstanceAverage(records);
 }
 async function init() {
