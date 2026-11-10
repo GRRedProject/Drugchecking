@@ -178,7 +178,7 @@ function render(records) {
   });
   const rows = [...months.values()];
   renderCombinedChart(rows, contaminants);
-  renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected');
+  renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected'); renderExpectedComparison(records, 'carfentanil', '#carfentanilExpected');
   renderLabSubstanceAverage(records);
 }
 async function init() {
