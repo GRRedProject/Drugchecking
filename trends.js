@@ -25,7 +25,7 @@ function parseSampleDate(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 function monthKey(value) { const date = parseSampleDate(value); return !date ? '' : `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`; }
-function monthLabel(key) { const [year, month] = key.split('-').map(Number); return new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short', year: '2-digit' }); }
+function monthLabel(key) { const [year, month] = key.split('-').map(Number); const label = new Date(year, month - 1, 1).toLocaleDateString('en-US', { month: 'short' }); return `${label} '${String(year).slice(-2)}`; }
 function splitNames(value) { return String(value || '').split('|').map((name) => name.trim()).filter(Boolean); }
 const labAliases = new Map([
   ['3,4-mdma', 'MDMA'], ['acetyl fentanyl', 'Acetylfentanyl'], ['aspirin', 'Acetylsalicylic Acid (Aspirin)'],
