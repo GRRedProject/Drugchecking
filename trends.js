@@ -53,7 +53,9 @@ function canonicalLabName(name) {
   const key = labKey(cleaned);
   return nonDrugLabOptions.has(key) ? '' : (labAliases.get(key) || cleaned.replace(/[.]+$/g, '').trim());
 }
-function labSubstances(record) { return splitNames(record.labTestingSubstances || record.labTestingResults).map(canonicalLabName).filter(Boolean); }
+function rawLabResults(record) { return String(record.labTestingSubstances || '').trim() || String(record.labTestingResults || '').trim(); }
+function hasLabResults(record) { return Boolean(rawLabResults(record)); }
+function labSubstances(record) { return splitNames(rawLabResults(record)).map(canonicalLabName).filter(Boolean); }
 function uniqueNames(records, field) {
   const names = new Map();
   records.forEach((record) => splitNames(record[field]).forEach((name) => { const key = name.toLocaleLowerCase(); if (!names.has(key)) names.set(key, name); }));
@@ -137,28 +139,27 @@ function renderCombinedChart(rows, contaminants) {
   const y = (share) => top + plotHeight - share / maxShare * plotHeight;
   const lines = series.map((item, seriesIndex) => {
     const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${y(point.shares[seriesIndex]).toFixed(1)}`).join(' ');
-    const markers = points.map((point) => { const hits = point.detections[item.key] || 0; return `<circle cx="${point.x.toFixed(1)}" cy="${y(point.shares[seriesIndex]).toFixed(1)}" r="4" fill="${item.color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point.shares[seriesIndex] * 100).toFixed(1)}% (${hits} of ${point.total} ${escapeHTML(selectedSampleBasis())})</title></circle>`; }).join('');
+    const markers = points.map((point) => { const hits = point.detections[item.key] || 0; return `<circle cx="${point.x.toFixed(1)}" cy="${y(point.shares[seriesIndex]).toFixed(1)}" r="4" fill="${item.color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point.shares[seriesIndex] * 100).toFixed(1)}% (${hits} of ${point.total} lab-tested ${escapeHTML(selectedSampleBasis())})</title></circle>`; }).join('');
     return line ? `<path d="${line}" class="trend-line" stroke="${item.color}"/>${markers}` : '';
   }).join('');
   const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 14}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
   const grid = [0, .5, 1].map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 10}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
   const message = !series.length ? 'Select at least one lab result to display the chart.' : !rows.length ? 'No dated samples match these filters.' : '';
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of ${escapeHTML(selectedSampleBasis())} collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of lab-tested ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of lab-tested ${escapeHTML(selectedSampleBasis())} collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
 }
-function renderExpectedComparison(records, substance, containerId, resultField = 'labTestingSubstances') {
+function renderExpectedComparison(records, substance, containerId) {
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
   records.forEach((record) => {
-    if (!opioidPattern.test(String(record.suspected || ''))) return;
-    const results = String(record[resultField] || (resultField === 'labTestingSubstances' ? record.labTestingResults : '') || '').trim();
-    group.total += 1; if (new RegExp(`(?:^|\\|)${substance}(?:$|\\|)`, 'i').test(results)) group.detections += 1;
+    if (!opioidPattern.test(String(record.suspected || '')) || !hasLabResults(record)) return;
+    group.total += 1; if (labSubstances(record).some((name) => labKey(name) === labKey(substance))) group.detections += 1;
   });
   const rate = group.total ? group.detections / group.total * 100 : 0; const percent = rate.toFixed(1);
-  $(containerId).innerHTML = `<div class="expected-row"><div class="expected-row-head"><span>${group.label}</span><strong>${percent}%</strong></div><div class="expected-track" role="progressbar" aria-label="${escapeHTML(substance)} detections among suspected opioid samples" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${rate.toFixed(2)}%"></span></div><p>${group.detections.toLocaleString()} of ${group.total.toLocaleString()} samples</p></div>`;
+  $(containerId).innerHTML = `<div class="expected-row"><div class="expected-row-head"><span>${group.label}</span><strong>${percent}%</strong></div><div class="expected-track" role="progressbar" aria-label="${escapeHTML(substance)} detections among lab-tested suspected opioid samples" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${rate.toFixed(2)}%"></span></div><p>${group.detections.toLocaleString()} of ${group.total.toLocaleString()} lab-tested samples</p></div>`;
 }
 function renderLabSubstanceAverage(records) {
   const counts = records.flatMap((record) => {
     if (!/\b(?:heroin|fentanyl)\b/i.test(String(record.suspected || ''))) return [];
-    const raw = String(record.labTestingSubstances || record.labTestingResults || '').trim();
+    const raw = rawLabResults(record);
     if (!raw) return [];
     const substances = new Set(raw.split('|').map((name) => name.trim().replace(/\s+\((?:primary|trace|major)\)$/i, '').toLowerCase()).filter(Boolean));
     return substances.size ? [substances.size] : [];
@@ -169,7 +170,7 @@ function renderLabSubstanceAverage(records) {
 function render(records) {
   const contaminants = contaminantNames.filter((name) => selectedContaminants.has(name.toLocaleLowerCase()));
   const chartRecords = filterSuspectedRecords(records);
-  const dated = chartRecords.map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
+  const dated = chartRecords.filter(hasLabResults).map((record) => ({ ...record, month: monthKey(record.acquiredOn) })).filter((record) => record.month).sort((a, b) => a.month.localeCompare(b.month));
   const months = new Map();
   dated.forEach((record) => {
     if (!months.has(record.month)) months.set(record.month, { key: record.month, total: 0, detections: Object.create(null) });
