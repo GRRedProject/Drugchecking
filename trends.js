@@ -105,8 +105,7 @@ function dateInputValue(date) { return `${date.getFullYear()}-${String(date.getM
 function dateFromInput(value, endOfDay = false) { if (!value) return null; const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0); }
 function defaultDateRange(months = 6) {
   const today = new Date(); today.setHours(0, 0, 0, 0);
-  const firstOfTargetMonth = new Date(today.getFullYear(), today.getMonth() - months, 1); const lastDay = new Date(firstOfTargetMonth.getFullYear(), firstOfTargetMonth.getMonth() + 1, 0).getDate();
-  const start = new Date(firstOfTargetMonth.getFullYear(), firstOfTargetMonth.getMonth(), Math.min(today.getDate(), lastDay));
+  const start = new Date(today.getFullYear(), today.getMonth() - months, 1);
   $('#dateStart').value = dateInputValue(start); $('#dateEnd').value = dateInputValue(today);
 }
 function applyDateRange() {
