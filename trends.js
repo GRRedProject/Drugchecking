@@ -145,11 +145,11 @@ function renderCombinedChart(rows, contaminants) {
   const message = !series.length ? 'Select at least one lab result to display the chart.' : !rows.length ? 'No dated samples match these filters.' : '';
   svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of ${escapeHTML(selectedSampleBasis())} collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
 }
-function renderExpectedComparison(records, substance, containerId) {
+function renderExpectedComparison(records, substance, containerId, resultField = 'ftirSubstances') {
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
   records.forEach((record) => {
     if (!opioidPattern.test(String(record.suspected || ''))) return;
-    group.total += 1; if (new RegExp(substance, 'i').test(record.ftirSubstances || '')) group.detections += 1;
+    group.total += 1; if (new RegExp(`(?:^|\\|)${substance}(?:$|\\|)`, 'i').test(record[resultField] || '')) group.detections += 1;
   });
   const rate = group.total ? group.detections / group.total * 100 : 0; const percent = rate.toFixed(1);
   $(containerId).innerHTML = `<div class="expected-row"><div class="expected-row-head"><span>${group.label}</span><strong>${percent}%</strong></div><div class="expected-track" role="progressbar" aria-label="${escapeHTML(substance)} detections among suspected opioid samples" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${rate.toFixed(2)}%"></span></div><p>${group.detections.toLocaleString()} of ${group.total.toLocaleString()} samples</p></div>`;
@@ -178,7 +178,7 @@ function render(records) {
   });
   const rows = [...months.values()];
   renderCombinedChart(rows, contaminants);
-  renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected'); renderExpectedComparison(records, 'carfentanil', '#carfentanilExpected');
+  renderExpectedComparison(records, 'xylazine', '#xylazineExpected'); renderExpectedComparison(records, 'medetomidine', '#medetomidineExpected'); renderExpectedComparison(records, 'carfentanil', '#carfentanilExpected', 'labTestingSubstances');
   renderLabSubstanceAverage(records);
 }
 async function init() {
