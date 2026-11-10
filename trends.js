@@ -149,7 +149,9 @@ function renderExpectedComparison(records, substance, containerId, resultField =
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
   records.forEach((record) => {
     if (!opioidPattern.test(String(record.suspected || ''))) return;
-    group.total += 1; if (new RegExp(`(?:^|\\|)${substance}(?:$|\\|)`, 'i').test(record[resultField] || '')) group.detections += 1;
+    const results = String(record[resultField] || '').trim();
+    if (resultField === 'labTestingSubstances' && !results) return;
+    group.total += 1; if (new RegExp(`(?:^|\\|)${substance}(?:$|\\|)`, 'i').test(results)) group.detections += 1;
   });
   const rate = group.total ? group.detections / group.total * 100 : 0; const percent = rate.toFixed(1);
   $(containerId).innerHTML = `<div class="expected-row"><div class="expected-row-head"><span>${group.label}</span><strong>${percent}%</strong></div><div class="expected-track" role="progressbar" aria-label="${escapeHTML(substance)} detections among suspected opioid samples" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><span style="width:${rate.toFixed(2)}%"></span></div><p>${group.detections.toLocaleString()} of ${group.total.toLocaleString()} samples</p></div>`;
