@@ -90,3 +90,4 @@
 .resources-grid .resource-alert .resource-link:hover{color:var(--on-ink)}
 @media(max-width:900px){.priority-resources{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:680px){.priority-resources{grid-template-columns:1fr;gap:13px}.priority-resources .priority-resource{min-height:96px;padding:22px}}
+@media(max-width:600px){.chart-wrap text{font-size:12px}.chart-wrap .axis-title{font-size:10px!important}.trend-line{stroke-width:3.25}}

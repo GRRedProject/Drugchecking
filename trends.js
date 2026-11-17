@@ -130,7 +130,7 @@ function applyDateRange() {
   $('#dateRangeStatus').textContent = `Showing ${selected.length.toLocaleString()} samples · ${townLabel} · ${from} to ${through}`;
 }
 function renderCombinedChart(rows, contaminants) {
-  const svg = $('#combinedTrendChart'); const width = 900; const height = 320; const left = 54; const right = 24; const top = 28; const bottom = 48; const plotWidth = width - left - right; const plotHeight = height - top - bottom;
+  const svg = $('#combinedTrendChart'); const compact = window.matchMedia('(max-width: 600px)').matches; const width = compact ? 390 : 900; const height = compact ? 370 : 320; const left = compact ? 48 : 54; const right = compact ? 14 : 24; const top = compact ? 38 : 28; const bottom = compact ? 58 : 48; const plotWidth = width - left - right; const plotHeight = height - top - bottom;
   const series = contaminants.map((name, index) => ({ name, key: name.toLocaleLowerCase(), color: seriesColors[index % seriesColors.length] }));
   const legend = $('#trendLegend'); legend.replaceChildren();
   series.forEach((item) => { const entry = document.createElement('span'); const swatch = document.createElement('i'); swatch.className = 'trend-legend-swatch'; swatch.style.backgroundColor = item.color; entry.append(swatch, document.createTextNode(item.name)); legend.append(entry); });
@@ -139,13 +139,14 @@ function renderCombinedChart(rows, contaminants) {
   const y = (share) => top + plotHeight - share / maxShare * plotHeight;
   const lines = series.map((item, seriesIndex) => {
     const line = points.map((point, index) => `${index ? 'L' : 'M'} ${point.x.toFixed(1)} ${y(point.shares[seriesIndex]).toFixed(1)}`).join(' ');
-    const markers = points.map((point) => { const hits = point.detections[item.key] || 0; return `<circle cx="${point.x.toFixed(1)}" cy="${y(point.shares[seriesIndex]).toFixed(1)}" r="4" fill="${item.color}" stroke="var(--surface)" stroke-width="2"><title>${escapeHTML(monthLabel(point.key))}: ${(point.shares[seriesIndex] * 100).toFixed(1)}% (${hits} of ${point.total} lab-tested ${escapeHTML(selectedSampleBasis())})</title></circle>`; }).join('');
+    const markers = points.map((point) => { const hits = point.detections[item.key] || 0; return `<circle cx="${point.x.toFixed(1)}" cy="${y(point.shares[seriesIndex]).toFixed(1)}" r="${compact ? 5 : 4}" fill="${item.color}" stroke="var(--surface)" stroke-width="${compact ? 2.5 : 2}"><title>${escapeHTML(monthLabel(point.key))}: ${(point.shares[seriesIndex] * 100).toFixed(1)}% (${hits} of ${point.total} lab-tested ${escapeHTML(selectedSampleBasis())})</title></circle>`; }).join('');
     return line ? `<path d="${line}" class="trend-line" stroke="${item.color}"/>${markers}` : '';
   }).join('');
-  const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - 14}" text-anchor="middle">${escapeHTML(monthLabel(point.key))}</text>`).join('');
-  const grid = [0, .5, 1].map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 10}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
+  const labels = points.filter((_, index) => index === 0 || index === points.length - 1 || index % Math.ceil(points.length / 6) === 0).map((point) => `<text x="${point.x.toFixed(1)}" y="${height - (compact ? 18 : 14)}" text-anchor="middle">${escapeHTML(compact ? new Date(Number(point.key.slice(0, 4)), Number(point.key.slice(5)) - 1, 1).toLocaleDateString('en-US', { month: 'short' }) : monthLabel(point.key))}</text>`).join('');
+  const gridSteps = compact ? [0, .25, .5, .75, 1] : [0, .5, 1];
+  const grid = gridSteps.map((fraction) => { const gridY = top + plotHeight - fraction * plotHeight; return `<line x1="${left}" y1="${gridY}" x2="${width - right}" y2="${gridY}" class="chart-grid"/><text x="${left - 8}" y="${gridY + 4}" text-anchor="end">${(maxShare * fraction * 100).toFixed(0)}%</text>`; }).join('');
   const message = !series.length ? 'Select at least one lab result to display the chart.' : !rows.length ? 'No dated samples match these filters.' : '';
-  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of lab-tested ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="14" class="axis-title">Percent of lab-tested ${escapeHTML(selectedSampleBasis())} collected that month</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
+  svg.setAttribute('viewBox', `0 0 ${width} ${height}`); svg.setAttribute('aria-label', `Monthly percentage of lab-tested ${selectedSuspectedLabel()} samples with selected lab results`); svg.innerHTML = `${grid}<text x="${left}" y="16" class="axis-title">${compact ? 'Lab-tested samples with result (%)' : `Percent of lab-tested ${escapeHTML(selectedSampleBasis())} collected that month`}</text>${lines}${message ? `<text x="${width / 2}" y="${height / 2}" text-anchor="middle" class="chart-empty-message">${message}</text>` : labels}`;
 }
 function renderExpectedComparison(records, substance, containerId) {
   const group = { label: 'Suspected opioid', total: 0, detections: 0 };
