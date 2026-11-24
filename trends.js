@@ -106,8 +106,8 @@ function filterSuspectedRecords(records) {
 function dateInputValue(date) { return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`; }
 function dateFromInput(value, endOfDay = false) { if (!value) return null; const [year, month, day] = value.split('-').map(Number); return new Date(year, month - 1, day, endOfDay ? 23 : 0, endOfDay ? 59 : 0, endOfDay ? 59 : 0, endOfDay ? 999 : 0); }
 function defaultDateRange(months = 6) {
-  const today = new Date(); today.setHours(0, 0, 0, 0);
-  const through = new Date(today); through.setDate(through.getDate() - 14);
+  const today = new Date();
+  const through = new Date(today.getFullYear(), today.getMonth(), 0);
   const start = new Date(through.getFullYear(), through.getMonth() - months + 1, 1);
   $('#dateStart').value = dateInputValue(start); $('#dateEnd').value = dateInputValue(through);
 }
